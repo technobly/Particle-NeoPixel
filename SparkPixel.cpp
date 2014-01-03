@@ -20,12 +20,12 @@
 //#ifndef ADAFRUIT_NEOPIXEL_H
 //#define ADAFRUIT_NEOPIXEL_H
 
-#if (ARDUINO >= 100)
- #include <Arduino.h>
-#else
- #include <WProgram.h>
- #include <pins_arduino.h>
-#endif
+// #if (ARDUINO >= 100)
+//  #include <Arduino.h>
+// #else
+//  #include <WProgram.h>
+//  #include <pins_arduino.h>
+// #endif
 
 // 'type' flags for LED pixels (third parameter to constructor):
 #define NEO_GRB     0x01 // Wired for GRB data order
@@ -38,7 +38,7 @@
 #ifndef __AVR_ATtiny85__
 #define NEO_RGB     0x00 // Wired for RGB data order
 #define NEO_KHZ400  0x00 // 400 KHz datastream
-#endif
+// #endif
 
 class Adafruit_NeoPixel {
 
