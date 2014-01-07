@@ -1,5 +1,5 @@
 /*-------------------------------------------------------------------------
-  Spark Core library to control WS2811 based RGB
+  Spark Core library to control WS2812 based RGB
   LED devices such as Adafruit NeoPixel strips.
   Currently handles 800 KHz bitstream on Spark Core, 
   with LEDs wired for GRB color order.
@@ -292,8 +292,8 @@ void Adafruit_NeoPixel::setBrightness(uint8_t b) {
 // Parameter 1 = number of pixels in strip
 // Parameter 2 = pin number (most are valid)
 // Pixels are wired for GRB bitstream
-// 800 KHz bitstream (e.g. High Density LED strip) - WS2811 (6-pin part)
-Adafruit_NeoPixel strip = Adafruit_NeoPixel(1, PIN);
+// 800 KHz bitstream (e.g. High Density LED strip) - WS2812 (6-pin part)
+Adafruit_NeoPixel strip = Adafruit_NeoPixel(3, PIN);
 
 void setup() {
   strip.begin();
