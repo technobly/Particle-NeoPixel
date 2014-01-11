@@ -178,7 +178,7 @@ void Adafruit_NeoPixel::show(void) {
           ::: "r0", "cc", "memory");
       }
       mask >>= 1;
-    } while ( j++ < 24 ); // ... pixel done
+    } while ( ++j < 24 ); // ... pixel done
   } // end while(i) ... no more pixels
   __enable_irq();
   endTime = micros(); // Save EOD time for latch on next call
