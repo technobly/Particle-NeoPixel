@@ -119,7 +119,7 @@ void Adafruit_NeoPixel::show(void) {
   // instances on different pins can be quickly issued in succession (each
   // instance doesn't delay the next).
 
-  noInterrupts(); // Need 100% focus on instruction timing
+  __disable_irq(); // Need 100% focus on instruction timing
 
   volatile uint32_t 
     c,    // 24-bit pixel color
@@ -132,17 +132,18 @@ void Adafruit_NeoPixel::show(void) {
     r,              // Current red byte value
     b;              // Current blue byte value
   
-  while(i) { // While bytes left...
-    mask = 0x1000000; // reset the mask, start 1 higher than
+  while(i) { // While bytes left... (3 bytes = 1 pixel)
+    mask = 0x800000; // reset the mask
     i--; // decrement bytes remaining
     g = *ptr++;   // Next green byte value
     r = *ptr++;   // Next red byte value
     b = *ptr++;   // Next blue byte value
     c = ((uint32_t)g << 16) | ((uint32_t)r <<  8) | b; // Pack the next 3 bytes to keep timing tight
-    for (j=0; j<24; j++) { // iterate through 24-bits of next pixel, MSB to LSB.
-      if (c & (mask >>= 1)) { // mask shifts first, then & with c
+    j = 0;        // reset the 24-bit counter
+    do {
+      PIN_MAP[pin].gpio_peripheral->BSRR = PIN_MAP[pin].gpio_pin; // HIGH
+      if (c & mask) { // if masked bit is high
         // 700ns HIGH (meas. 694ns)
-        PIN_MAP[pin].gpio_peripheral->BSRR = PIN_MAP[pin].gpio_pin; // HIGH
         asm volatile(
           "mov r0, r0" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
           "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
@@ -150,17 +151,19 @@ void Adafruit_NeoPixel::show(void) {
           "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
           "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
           "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
-          "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" 
-          "nop" "\n\t" "nop" "\n\t"
+          "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
           ::: "r0", "cc", "memory");
         // 600ns LOW (meas. 598ns)
         PIN_MAP[pin].gpio_peripheral->BRR = PIN_MAP[pin].gpio_pin; // LOW
-      } else {
-        // 350ns HIGH (meas. 360ns)
-        PIN_MAP[pin].gpio_peripheral->BSRR = PIN_MAP[pin].gpio_pin; // HIGH
+        asm volatile(  
+          "mov r0, r0" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+          "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+          ::: "r0", "cc", "memory");
+      }
+      else { // else masked bit is low
+        // 350ns HIGH (meas. 346ns)
         asm volatile(
           "mov r0, r0" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
-          "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
           "nop" "\n\t" "nop" "\n\t"
           ::: "r0", "cc", "memory");
         // 800ns LOW (meas. 792ns)
@@ -169,13 +172,15 @@ void Adafruit_NeoPixel::show(void) {
           "mov r0, r0" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
           "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
           "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
-          "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+          "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+          "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+          "nop" "\n\t" "nop" "\n\t"
           ::: "r0", "cc", "memory");
       }
-    }
-  } // end while(i)
-
-  interrupts();
+      mask >>= 1;
+    } while ( j++ < 24 ); // ... pixel done
+  } // end while(i) ... no more pixels
+  __enable_irq();
   endTime = micros(); // Save EOD time for latch on next call
 }
 
@@ -293,7 +298,7 @@ void Adafruit_NeoPixel::setBrightness(uint8_t b) {
 // Parameter 2 = pin number (most are valid)
 // Pixels are wired for GRB bitstream
 // 800 KHz bitstream (e.g. High Density LED strip) - WS2812 (6-pin part)
-Adafruit_NeoPixel strip = Adafruit_NeoPixel(3, PIN);
+Adafruit_NeoPixel strip = Adafruit_NeoPixel(1, PIN);
 
 void setup() {
   strip.begin();
@@ -313,12 +318,25 @@ void loop() {
   
   //colorWipe(strip.Color(0, 0, 255), 50); // Blue
   
-  //rainbow(20);
+  rainbow(20);
   
-  rainbowCycle(20);
+  //rainbowCycle(20);
+  
+  //colorAll(strip.Color(0, 255, 255), 50); // Magenta
 }
 
-// Fill the dots one after the other with a color
+// Set all pixels in the strip to a solid color, then wait (ms)
+void colorAll(uint32_t c, uint8_t wait) {
+  uint16_t i;
+  
+  for(i=0; i<strip.numPixels(); i++) {
+    strip.setPixelColor(i, c);
+  }
+  strip.show();
+  delay(wait);
+}
+
+// Fill the dots one after the other with a color, wait (ms) after each one
 void colorWipe(uint32_t c, uint8_t wait) {
   for(uint16_t i=0; i<strip.numPixels(); i++) {
       strip.setPixelColor(i, c);
@@ -339,7 +357,7 @@ void rainbow(uint8_t wait) {
   }
 }
 
-// Slightly different, this makes the rainbow equally distributed throughout
+// Slightly different, this makes the rainbow equally distributed throughout, then wait (ms)
 void rainbowCycle(uint8_t wait) {
   uint16_t i, j;
 
