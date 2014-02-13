@@ -12,62 +12,6 @@
   please support Adafruit and open-source hardware by purchasing products
   from Adafruit!
   --------------------------------------------------------------------*/
-  
-/* ======================= Adafruit_NeoPixel.h ======================= */  
-/*--------------------------------------------------------------------
-  This file is part of the Adafruit NeoPixel library.
-
-  NeoPixel is free software: you can redistribute it and/or modify
-  it under the terms of the GNU Lesser General Public License as
-  published by the Free Software Foundation, either version 3 of
-  the License, or (at your option) any later version.
-
-  NeoPixel is distributed in the hope that it will be useful,
-  but WITHOUT ANY WARRANTY; without even the implied warranty of
-  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-  GNU Lesser General Public License for more details.
-
-  You should have received a copy of the GNU Lesser General Public
-  License along with NeoPixel.  If not, see
-  <http://www.gnu.org/licenses/>.
-  --------------------------------------------------------------------*/
-
-class Adafruit_NeoPixel {
-
- public:
-
-  // Constructor: number of LEDs, pin number, LED type
-  Adafruit_NeoPixel(uint16_t n, uint8_t p=6);
-  ~Adafruit_NeoPixel();
-
-  void
-    begin(void),
-    show(void),
-    setPin(uint8_t p),
-    setPixelColor(uint16_t n, uint8_t r, uint8_t g, uint8_t b),
-    setPixelColor(uint16_t n, uint32_t c),
-    setBrightness(uint8_t);
-  uint8_t
-   *getPixels() const;
-  uint16_t
-    numPixels(void) const;
-  static uint32_t
-    Color(uint8_t r, uint8_t g, uint8_t b);
-  uint32_t
-    getPixelColor(uint16_t n) const;
-
- private:
-
-  const uint16_t
-    numLEDs,       // Number of RGB LEDs in strip
-    numBytes;      // Size of 'pixels' buffer below
-  uint8_t
-    pin,           // Output pin number
-    brightness,
-   *pixels;        // Holds LED color values (3 bytes each)
-  uint32_t
-    endTime;       // Latch timing reference
-};
 
 /* ======================= Adafruit_NeoPixel.cpp ======================= */
 /*-------------------------------------------------------------------------
@@ -87,6 +31,8 @@ class Adafruit_NeoPixel {
   License along with NeoPixel.  If not, see
   <http://www.gnu.org/licenses/>.
   -------------------------------------------------------------------------*/
+  
+#include "Spark_NeoPixel.h"
 
 Adafruit_NeoPixel::Adafruit_NeoPixel(uint16_t n, uint8_t p) : numLEDs(n), numBytes(n), pin(p), pixels(NULL)
 {
@@ -288,98 +234,5 @@ void Adafruit_NeoPixel::setBrightness(uint8_t b) {
       *ptr++ = (c * scale) >> 8;
     }
     brightness = newBrightness;
-  }
-}
-
-/* ======================= SparkPixel.cpp ======================= */
-#define PIN D0
-
-// Parameter 1 = number of pixels in strip
-// Parameter 2 = pin number (most are valid)
-// Pixels are wired for GRB bitstream
-// 800 KHz bitstream (e.g. High Density LED strip) - WS2812 (6-pin part)
-Adafruit_NeoPixel strip = Adafruit_NeoPixel(1, PIN);
-
-void setup() {
-  strip.begin();
-  strip.show(); // Initialize all pixels to 'off'
-}
-
-void loop() {
-  // Some example procedures showing how to display to the pixels:
-  // Do not run more than one of these at a time, or the b/g tasks will be blocked.
-  //-------------------------------------------------------------------------------
-  //strip.setPixelColor(0, strip.Color(255, 0, 255));
-  //strip.show();
-  
-  //colorWipe(strip.Color(255, 0, 0), 50); // Red
-  
-  //colorWipe(strip.Color(0, 255, 0), 50); // Green
-  
-  //colorWipe(strip.Color(0, 0, 255), 50); // Blue
-  
-  rainbow(20);
-  
-  //rainbowCycle(20);
-  
-  //colorAll(strip.Color(0, 255, 255), 50); // Magenta
-}
-
-// Set all pixels in the strip to a solid color, then wait (ms)
-void colorAll(uint32_t c, uint8_t wait) {
-  uint16_t i;
-  
-  for(i=0; i<strip.numPixels(); i++) {
-    strip.setPixelColor(i, c);
-  }
-  strip.show();
-  delay(wait);
-}
-
-// Fill the dots one after the other with a color, wait (ms) after each one
-void colorWipe(uint32_t c, uint8_t wait) {
-  for(uint16_t i=0; i<strip.numPixels(); i++) {
-      strip.setPixelColor(i, c);
-      strip.show();
-      delay(wait);
-  }
-}
-
-void rainbow(uint8_t wait) {
-  uint16_t i, j;
-
-  for(j=0; j<256; j++) {
-    for(i=0; i<strip.numPixels(); i++) {
-      strip.setPixelColor(i, Wheel((i+j) & 255));
-    }
-    strip.show();
-    delay(wait);
-  }
-}
-
-// Slightly different, this makes the rainbow equally distributed throughout, then wait (ms)
-void rainbowCycle(uint8_t wait) {
-  uint16_t i, j;
-
-  for(j=0; j<256; j++) { // 1 cycle of all colors on wheel
-    for(i=0; i< strip.numPixels(); i++) {
-      strip.setPixelColor(i, Wheel(((i * 256 / strip.numPixels()) + j) & 255));
-    }
-    strip.show();
-    delay(wait);
-  }
-}
-
-// Input a value 0 to 255 to get a color value.
-// The colours are a transition r - g - b - back to r.
-uint32_t Wheel(byte WheelPos) {
-  if(WheelPos < 85) {
-   return strip.Color(WheelPos * 3, 255 - WheelPos * 3, 0);
-  } else if(WheelPos < 170) {
-   WheelPos -= 85;
-   return strip.Color(255 - WheelPos * 3, 0, WheelPos * 3);
-  } else {
-   WheelPos -= 170;
-   return strip.Color(0, WheelPos * 3, 255 - WheelPos * 3);
   }
 }
