@@ -89,7 +89,10 @@ void Adafruit_NeoPixel::show(void) {
     do {
       PIN_MAP[pin].gpio_peripheral->BSRR = PIN_MAP[pin].gpio_pin; // HIGH
       if (c & mask) { // if masked bit is high
-        // 700ns HIGH (meas. 694ns)
+        // WS2812 spec             700ns HIGH
+        // WS2812B spec            800ns HIGH
+        // Adafruit on Arduino    (meas. 812ns)
+        // This lib on Spark Core (meas. 804ns)
         asm volatile(
           "mov r0, r0" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
           "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
@@ -97,25 +100,34 @@ void Adafruit_NeoPixel::show(void) {
           "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
           "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
           "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
-          "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+          "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+          "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+          "nop" "\n\t"
           ::: "r0", "cc", "memory");
-        // 600ns LOW (meas. 598ns)
+        // WS2812 spec             600ns LOW
+        // WS2812B spec            450ns LOW
+        // Adafruit on Arduino    (meas. 436ns)
+        // This lib on Spark Core (meas. 472ns)
         PIN_MAP[pin].gpio_peripheral->BRR = PIN_MAP[pin].gpio_pin; // LOW
-        asm volatile(  
-          "mov r0, r0" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
-          "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
-          ::: "r0", "cc", "memory");
       }
       else { // else masked bit is low
-        // 350ns HIGH (meas. 346ns)
+        // WS2812 spec             350ns HIGH
+        // WS2812B spec            400ns HIGH
+        // Adafruit on Arduino    (meas. 312ns)
+        // This lib on Spark Core (meas. 316ns)
         asm volatile(
           "mov r0, r0" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
-          "nop" "\n\t" "nop" "\n\t"
+          "nop" "\n\t"
           ::: "r0", "cc", "memory");
-        // 800ns LOW (meas. 792ns)
+        // WS2812 spec             800ns LOW
+        // WS2812B spec            850ns LOW
+        // Adafruit on Arduino    (meas. 938ns)
+        // This lib on Spark Core (meas. 932ns)
         PIN_MAP[pin].gpio_peripheral->BRR = PIN_MAP[pin].gpio_pin; // LOW
         asm volatile(
           "mov r0, r0" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+          "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+          "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
           "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
           "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
           "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
