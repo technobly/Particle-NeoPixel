@@ -16,13 +16,22 @@
 
 #include "Spark_NeoPixel.h"
 
-#define PIN D0
-
+#define PIN D2
+  
 // Parameter 1 = number of pixels in strip
 // Parameter 2 = pin number (most are valid)
-// Pixels are wired for GRB bitstream
-// 800 KHz bitstream (e.g. High Density LED strip) - WS2812 (6-pin part)
-Adafruit_NeoPixel strip = Adafruit_NeoPixel(1, PIN);
+//               note: if not specified, D2 is selected for you.
+// Parameter 3 = pixel type [ WS2812, WS2812B, WS2811 ]
+//               note: if not specified, WS2812B is selected for you.
+//               note: RGB order is automatically applied to WS2811,
+//                     WS2812/WS2812B is GRB order.
+//
+// 800 KHz bitstream 800 KHz bitstream (most NeoPixel products ...
+//                         ... WS2812 (6-pin part)/WS2812B (4-pin part) )
+//
+// 400 KHz bitstream (classic 'v1' (not v2) FLORA pixels, WS2811 drivers)
+
+Adafruit_NeoPixel strip = Adafruit_NeoPixel(3, PIN, WS2812B);
 
 // IMPORTANT: To reduce NeoPixel burnout risk, add 1000 uF capacitor across
 // pixel power leads, add 300 - 500 Ohm resistor on first pixel's data input
