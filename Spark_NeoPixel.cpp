@@ -1,8 +1,8 @@
 /*-------------------------------------------------------------------------
-  Spark Core library to control WS2812 based RGB
+  Spark Core library to control WS2811/WS2812 based RGB
   LED devices such as Adafruit NeoPixel strips.
-  Currently handles 800 KHz bitstream on Spark Core, 
-  with LEDs wired for GRB color order.
+  Currently handles 800 KHz and 400kHz bitstream on Spark Core, 
+  WS2812, WS2812B and WS2811.
 
   Written by Phil Burgess / Paint Your Dragon for Adafruit Industries.
   Modified to work with Spark Core by Technobly.
