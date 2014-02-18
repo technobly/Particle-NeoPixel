@@ -12,12 +12,25 @@
   please support Adafruit and open-source hardware by purchasing products
   from Adafruit!
   --------------------------------------------------------------------*/
-/* ======================= Spark_StrandTest.cpp ======================= */
+
+/* ======================= Includes ================================= */
+
+#include <application.h>
 
 #include "Spark_NeoPixel.h"
 
+/* ======================= Prototype Defs =========================== */
+
+void colorAll(uint32_t c, uint8_t wait);
+void colorWipe(uint32_t c, uint8_t wait);
+void rainbow(uint8_t wait);
+void rainbowCycle(uint8_t wait);
+uint32_t Wheel(byte WheelPos);
+
+/* ======================= Spark_StrandTest.cpp ===================== */
+
 #define PIN D2
-  
+
 // Parameter 1 = number of pixels in strip
 // Parameter 2 = pin number (most are valid)
 //               note: if not specified, D2 is selected for you.
@@ -45,8 +58,9 @@ void setup() {
 
 void loop() {
   // Some example procedures showing how to display to the pixels:
-  // Do not run more than one of these at a time, or the b/g tasks will be blocked.
-  //-------------------------------------------------------------------------------
+  // Do not run more than one of these at a time, or the b/g tasks 
+  // will be blocked.
+  //--------------------------------------------------------------
   //strip.setPixelColor(0, strip.Color(255, 0, 255));
   //strip.show();
   
