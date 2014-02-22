@@ -35,6 +35,8 @@
 #ifndef SPARK_NEOPIXEL_H
 #define SPARK_NEOPIXEL_H
 
+#include "spark_wiring.h"
+
 // 'type' flags for LED pixels (third parameter to constructor):
 #define WS2812   0x02 // 800 KHz datastream
 #define WS2812B  0x02 // 800 KHz datastream
