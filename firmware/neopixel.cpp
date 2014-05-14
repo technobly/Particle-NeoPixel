@@ -31,8 +31,8 @@
   License along with NeoPixel.  If not, see
   <http://www.gnu.org/licenses/>.
   -------------------------------------------------------------------------*/
-  
-#include "Spark_NeoPixel.h"
+
+#include "neopixel.h"
 
 Adafruit_NeoPixel::Adafruit_NeoPixel(uint16_t n, uint8_t p, uint8_t t) : \
   numLEDs(n), numBytes(n*3), type(t), pin(p), pixels(NULL)

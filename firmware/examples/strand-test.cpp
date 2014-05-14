@@ -28,9 +28,9 @@
 
 /* ======================= Includes ================================= */
 
-#include <application.h>
+#include "application.h"
 
-#include "Spark_NeoPixel.h"
+#include "neopixel/neopixel.h"
 
 /* ======================= Prototype Defs =========================== */
 
