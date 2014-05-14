@@ -1,7 +1,7 @@
 {
   "name": "neopixel",
-  "author": "TODO",
-  "license": "TODO",
+  "author": "Adafruit, Technobly",
+  "license": "GNU GPLv3",
   "version": "0.0.1",
   "description": "An Implementation of Adafruit's NeoPixel Library for the Spark Core",
   "namespace": "Adafruit_NeoPixel"
