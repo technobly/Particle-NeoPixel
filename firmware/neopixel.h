@@ -4,6 +4,9 @@
   Currently handles 800 KHz and 400kHz bitstream on Spark Core, 
   WS2812, WS2812B and WS2811.
 
+  Also supports Radio Shack Tri-Color Strip with TM1803 controller
+  400kHz bitstream.
+
   Written by Phil Burgess / Paint Your Dragon for Adafruit Industries.
   Modified to work with Spark Core by Technobly.
   Contributions by PJRC and other members of the open source community.
@@ -35,12 +38,13 @@
 #ifndef SPARK_NEOPIXEL_H
 #define SPARK_NEOPIXEL_H
 
-#include "spark_wiring.h"
+#include "application.h"
 
 // 'type' flags for LED pixels (third parameter to constructor):
-#define WS2812   0x02 // 800 KHz datastream
-#define WS2812B  0x02 // 800 KHz datastream
-#define WS2811   0x00 // 400 KHz datastream
+#define WS2812   0x02 // 800 KHz datastream (NeoPixel)
+#define WS2812B  0x02 // 800 KHz datastream (NeoPixel)
+#define WS2811   0x00 // 400 KHz datastream (NeoPixel)
+#define TM1803   0x03 // 400 KHz datastream (Radio Shack Tri-Color Strip)
   
 class Adafruit_NeoPixel {
 

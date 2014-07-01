@@ -4,6 +4,9 @@
   Currently handles 800 KHz and 400kHz bitstream on Spark Core, 
   WS2812, WS2812B and WS2811.
 
+  Also supports Radio Shack Tri-Color Strip with TM1803 controller
+  400kHz bitstream.
+  
   Written by Phil Burgess / Paint Your Dragon for Adafruit Industries.
   Modified to work with Spark Core by Technobly.
   Contributions by PJRC and other members of the open source community.
@@ -55,13 +58,18 @@ void Adafruit_NeoPixel::begin(void) {
 void Adafruit_NeoPixel::show(void) {
   if(!pixels) return;
 
-  // Data latch = 50+ microsecond pause in the output stream.  Rather than
+  // Data latch = 24 or 50 microsecond pause in the output stream.  Rather than
   // put a delay at the end of the function, the ending time is noted and
   // the function will simply hold off (if needed) on issuing the
   // subsequent round of data until the latch time has elapsed.  This
   // allows the mainline code to start generating the next frame of data
   // rather than stalling for the latch.
-  while((micros() - endTime) < 50L);
+  if(type == WS2812B || type == WS2811) { // same as WS2812, 800 KHz bitstream, 50us reset pulse
+    while((micros() - endTime) < 50L);
+  }
+  else { // assume it's TM1803, 800 KHz bitstream, 24us reset pulse
+    while((micros() - endTime) < 24L);
+  } 
   // endTime is a private member (rather than global var) so that multiple
   // instances on different pins can be quickly issued in succession (each
   // instance doesn't delay the next).
@@ -82,7 +90,7 @@ void Adafruit_NeoPixel::show(void) {
   if(type == WS2812B) { // same as WS2812, 800 KHz bitstream
     while(i) { // While bytes left... (3 bytes = 1 pixel)
       mask = 0x800000; // reset the mask
-      i--; // decrement bytes remaining
+      i = i-3;      // decrement bytes remaining
       g = *ptr++;   // Next green byte value
       r = *ptr++;   // Next red byte value
       b = *ptr++;   // Next blue byte value
@@ -91,7 +99,7 @@ void Adafruit_NeoPixel::show(void) {
       do {
         PIN_MAP[pin].gpio_peripheral->BSRR = PIN_MAP[pin].gpio_pin; // HIGH
         if (c & mask) { // if masked bit is high
-          // WS2812 spec 700ns HIGH
+          // WS2812 spec             700ns HIGH
           // Adafruit on Arduino    (meas. 812ns)
           // This lib on Spark Core (meas. 804ns)
           asm volatile(
@@ -105,20 +113,20 @@ void Adafruit_NeoPixel::show(void) {
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
             "nop" "\n\t"
             ::: "r0", "cc", "memory");
-          // WS2812 spec 600ns LOW
+          // WS2812 spec             600ns LOW
           // Adafruit on Arduino    (meas. 436ns)
           // This lib on Spark Core (meas. 472ns)
           PIN_MAP[pin].gpio_peripheral->BRR = PIN_MAP[pin].gpio_pin; // LOW
         }
         else { // else masked bit is low
-          // WS2812 spec 350ns HIGH
+          // WS2812 spec             350ns HIGH
           // Adafruit on Arduino    (meas. 312ns)
           // This lib on Spark Core (meas. 316ns)
           asm volatile(
             "mov r0, r0" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
             "nop" "\n\t"
             ::: "r0", "cc", "memory");
-          // WS2812 spec 800ns LOW
+          // WS2812 spec             800ns LOW
           // Adafruit on Arduino    (meas. 938ns)
           // This lib on Spark Core (meas. 932ns)
           PIN_MAP[pin].gpio_peripheral->BRR = PIN_MAP[pin].gpio_pin; // LOW
@@ -137,10 +145,10 @@ void Adafruit_NeoPixel::show(void) {
       } while ( ++j < 24 ); // ... pixel done
     } // end while(i) ... no more pixels
   }
-  else { // must be only other option WS2811, 400 KHz bitstream
+  else if(type == WS2811) { // WS2811, 400 KHz bitstream
     while(i) { // While bytes left... (3 bytes = 1 pixel)
       mask = 0x800000; // reset the mask
-      i--; // decrement bytes remaining
+      i = i-3;      // decrement bytes remaining
       g = *ptr++;   // Next green byte value
       r = *ptr++;   // Next red byte value
       b = *ptr++;   // Next blue byte value
@@ -199,8 +207,8 @@ void Adafruit_NeoPixel::show(void) {
             "nop" "\n\t" "nop" "\n\t"
             "nop" "\n\t"
             ::: "r0", "cc", "memory");
-          // WS2811 spec               2us LOW
-          // Adafruit on Arduino    (meas. 2us)
+          // WS2811 spec             2.000us LOW
+          // Adafruit on Arduino    (meas. 2.000us)
           // This lib on Spark Core (meas. 1.988us)
           PIN_MAP[pin].gpio_peripheral->BRR = PIN_MAP[pin].gpio_pin; // LOW
           asm volatile(
@@ -232,6 +240,87 @@ void Adafruit_NeoPixel::show(void) {
       } while ( ++j < 24 ); // ... pixel done
     } // end while(i) ... no more pixels
   }
+  else { // must be only other option TM1803 (Radio Shack Tri-Color Strip), 400 KHz bitstream
+    while(i) { // While bytes left... (3 bytes = 1 pixel)
+      mask = 0x800000; // reset the mask
+      i = i-3;      // decrement bytes remaining
+      g = *ptr++;   // Next green byte value
+      r = *ptr++;   // Next red byte value
+      b = *ptr++;   // Next blue byte value
+      c = ((uint32_t)g << 16) | ((uint32_t)r <<  8) | b; // Pack the next 3 bytes to keep timing tight
+      j = 0;        // reset the 24-bit counter
+      do {
+        PIN_MAP[pin].gpio_peripheral->BSRR = PIN_MAP[pin].gpio_pin; // HIGH
+        if (c & mask) { // if masked bit is high
+          // TM1803 spec             1.36us HIGH
+          // Pololu on Arduino      (meas. 1.31us)
+          // This lib on Spark Core (meas. 1.36us)
+          asm volatile(
+            "mov r0, r0" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+            "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+            "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+            "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+            "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+            "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+            "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+            "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+            "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+            "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+            "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+            "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+            "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+            "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+            "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+            "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+            "nop" "\n\t"
+            ::: "r0", "cc", "memory");
+          // TM1803 spec             680ns LOW
+          // Pololu on Arduino      (meas. 1.024us)
+          // This lib on Spark Core (meas. 668ns)
+          PIN_MAP[pin].gpio_peripheral->BRR = PIN_MAP[pin].gpio_pin; // LOW
+          asm volatile(  
+            "mov r0, r0" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+            "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+            "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+            ::: "r0", "cc", "memory");
+        }
+        else { // else masked bit is low
+          // TM1803 spec             680ns HIGH
+          // Pololu on Arduino      (meas. 374ns)
+          // This lib on Spark Core (meas. 680ns)
+          asm volatile(
+            "mov r0, r0" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+            "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+            "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+            "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+            "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+            "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+            ::: "r0", "cc", "memory");
+          // TM1803 spec             1.36us LOW
+          // Pololu on Arduino      (meas. 2.00us)
+          // This lib on Spark Core (meas. 1.36us)
+          PIN_MAP[pin].gpio_peripheral->BRR = PIN_MAP[pin].gpio_pin; // LOW
+          asm volatile(
+            "mov r0, r0" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+            "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+            "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+            "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+            "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+            "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+            "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+            "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+            "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+            "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+            "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+            "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+            "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+            "nop" "\n\t" "nop" "\n\t"
+            ::: "r0", "cc", "memory");
+        }
+        mask >>= 1;
+      } while ( ++j < 24 ); // ... pixel done
+    } // end while(i) ... no more pixels
+  }
   __enable_irq();
   endTime = micros(); // Save EOD time for latch on next call
 }
@@ -257,7 +346,7 @@ void Adafruit_NeoPixel::setPixelColor(
     if(type == WS2812B) { // WS2812/WS2812B is GRB order.
       *p++ = g;
       *p++ = r;
-    } else { // WS2811 is RGB order
+    } else { // WS2811/TM1803 is RGB order
       *p++ = r;
       *p++ = g;
     }
@@ -281,7 +370,7 @@ void Adafruit_NeoPixel::setPixelColor(uint16_t n, uint32_t c) {
     if(type == WS2812B) { // WS2812/WS2812B is GRB order.
       *p++ = g;
       *p++ = r;
-    } else { // WS2811 is RGB order
+    } else { // WS2811/TM1803 is RGB order
       *p++ = r;
       *p++ = g;
     }

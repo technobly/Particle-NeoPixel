@@ -3,10 +3,16 @@
   LED devices such as Adafruit NeoPixel strips.
   Currently handles 800 KHz and 400kHz bitstream on Spark Core, 
   WS2812, WS2812B and WS2811.
+
+  Also supports Radio Shack Tri-Color Strip with TM1803 controller
+  400kHz bitstream.
   
   PLEASE NOTE that the NeoPixels require 5V level inputs 
   and the Spark Core only has 3.3V level outputs. Level shifting is
   necessary, but will require a fast device such as one of the following:
+
+  [SN74HCT125N]
+  http://www.digikey.com/product-detail/en/SN74HCT125N/296-8386-5-ND/376860
 
   [SN74HCT245N] 
   http://www.digikey.com/product-detail/en/SN74HCT245N/296-1612-5-ND/277258
@@ -26,13 +32,13 @@
   from Adafruit!
   --------------------------------------------------------------------*/
 
-/* ======================= Includes ================================= */
+/* ======================= includes ================================= */
 
 #include "application.h"
-
+//#include "spark_disable_wlan.h" (for faster local debugging only)
 #include "neopixel/neopixel.h"
 
-/* ======================= Prototype Defs =========================== */
+/* ======================= prototypes =============================== */
 
 void colorAll(uint32_t c, uint8_t wait);
 void colorWipe(uint32_t c, uint8_t wait);
@@ -40,24 +46,29 @@ void rainbow(uint8_t wait);
 void rainbowCycle(uint8_t wait);
 uint32_t Wheel(byte WheelPos);
 
-/* ======================= Spark_StrandTest.cpp ===================== */
+/* ======================= extra-examples.cpp ======================== */
 
-#define PIN D2
+// IMPORTANT: Set pixel COUNT, PIN and TYPE
+#define PIXEL_COUNT 10
+#define PIXEL_PIN D2
+#define PIXEL_TYPE WS2812B
 
 // Parameter 1 = number of pixels in strip
 // Parameter 2 = pin number (most are valid)
 //               note: if not specified, D2 is selected for you.
-// Parameter 3 = pixel type [ WS2812, WS2812B, WS2811 ]
+// Parameter 3 = pixel type [ WS2812, WS2812B, WS2811, TM1803 ]
 //               note: if not specified, WS2812B is selected for you.
 //               note: RGB order is automatically applied to WS2811,
-//                     WS2812/WS2812B is GRB order.
+//                     WS2812/WS2812B/TM1803 is GRB order.
 //
 // 800 KHz bitstream 800 KHz bitstream (most NeoPixel products ...
 //                         ... WS2812 (6-pin part)/WS2812B (4-pin part) )
 //
 // 400 KHz bitstream (classic 'v1' (not v2) FLORA pixels, WS2811 drivers)
+//                   (Radio Shack Tri-Color LED Strip - TM1803 driver
+//                    NOTE: RS Tri-Color LED's are grouped in sets of 3)
 
-Adafruit_NeoPixel strip = Adafruit_NeoPixel(3, PIN, WS2812B);
+Adafruit_NeoPixel strip = Adafruit_NeoPixel(PIXEL_COUNT, PIXEL_PIN, PIXEL_TYPE);
 
 // IMPORTANT: To reduce NeoPixel burnout risk, add 1000 uF capacitor across
 // pixel power leads, add 300 - 500 Ohm resistor on first pixel's data input
@@ -74,6 +85,7 @@ void loop() {
   // Do not run more than one of these at a time, or the b/g tasks 
   // will be blocked.
   //--------------------------------------------------------------
+  
   //strip.setPixelColor(0, strip.Color(255, 0, 255));
   //strip.show();
   
@@ -104,9 +116,9 @@ void colorAll(uint32_t c, uint8_t wait) {
 // Fill the dots one after the other with a color, wait (ms) after each one
 void colorWipe(uint32_t c, uint8_t wait) {
   for(uint16_t i=0; i<strip.numPixels(); i++) {
-      strip.setPixelColor(i, c);
-      strip.show();
-      delay(wait);
+    strip.setPixelColor(i, c);
+    strip.show();
+    delay(wait);
   }
 }
 
