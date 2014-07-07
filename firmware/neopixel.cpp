@@ -240,7 +240,7 @@ void Adafruit_NeoPixel::show(void) {
       } while ( ++j < 24 ); // ... pixel done
     } // end while(i) ... no more pixels
   }
-  else { // must be only other option TM1803 (Radio Shack Tri-Color Strip), 400 KHz bitstream
+  else if(type == TM1803) { // TM1803 (Radio Shack Tri-Color Strip), 400 KHz bitstream
     while(i) { // While bytes left... (3 bytes = 1 pixel)
       mask = 0x800000; // reset the mask
       i = i-3;      // decrement bytes remaining
@@ -321,6 +321,65 @@ void Adafruit_NeoPixel::show(void) {
       } while ( ++j < 24 ); // ... pixel done
     } // end while(i) ... no more pixels
   }
+  else { // must be only other option TM1829, 800 KHz bitstream
+    while(i) { // While bytes left... (3 bytes = 1 pixel)
+      mask = 0x800000; // reset the mask
+      i = i-3;      // decrement bytes remaining
+      g = *ptr++;   // Next green byte value
+      r = *ptr++;   // Next red byte value
+      b = *ptr++;   // Next blue byte value
+      c = ((uint32_t)g << 16) | ((uint32_t)r <<  8) | b; // Pack the next 3 bytes to keep timing tight
+      j = 0;        // reset the 24-bit counter
+      PIN_MAP[pin].gpio_peripheral->BRR = PIN_MAP[pin].gpio_pin; // LOW
+      for( ;; ) {   // ... pixel done
+        if (c & mask) { // if masked bit is high
+          // TM1829 spec             800ns LOW
+          // This lib on Spark Core (meas. 792ns)
+          mask >>= 1; // Do this task during the long delay of this bit
+          asm volatile(
+            "mov r0, r0" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+            "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+            "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+            "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+            "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+            "nop" "\n\t" "nop" "\n\t"
+            ::: "r0", "cc", "memory");
+          j++;
+          // TM1829 spec             300ns HIGH
+          // This lib on Spark Core (meas. 333ns)
+          PIN_MAP[pin].gpio_peripheral->BSRR = PIN_MAP[pin].gpio_pin; // HIGH
+          asm volatile(
+            "mov r0, r0" "\n\t"
+            ::: "r0", "cc", "memory");
+          if(j==24) break;
+          PIN_MAP[pin].gpio_peripheral->BRR = PIN_MAP[pin].gpio_pin; // LOW
+        }
+        else { // else masked bit is low
+          // TM1829 spec             300ns LOW
+          // This lib on Spark Core (meas. 292ns)
+          asm volatile(
+            "mov r0, r0" "\n\t"
+            ::: "r0", "cc", "memory");
+          // TM1829 spec             800ns LOW
+          // This lib on Spark Core (meas. 792ns)
+          PIN_MAP[pin].gpio_peripheral->BSRR = PIN_MAP[pin].gpio_pin; // HIGH
+          j++;
+          mask >>= 1; // Do this task during the long delay of this bit
+          asm volatile(
+            "mov r0, r0" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+            "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+            "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+            "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+            "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+            "nop" "\n\t" "nop" "\n\t"
+            ::: "r0", "cc", "memory");
+          if(j==24) break;
+          PIN_MAP[pin].gpio_peripheral->BRR = PIN_MAP[pin].gpio_pin; // LOW
+        }
+      }
+    } // end while(i) ... no more pixels
+  }
+
   __enable_irq();
   endTime = micros(); // Save EOD time for latch on next call
 }
