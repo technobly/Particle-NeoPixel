@@ -57,7 +57,7 @@ class Adafruit_NeoPixel {
 
   void
     begin(void),
-    show(void),
+    show(void) __attribute__((optimize("Ofast"))),
     setPin(uint8_t p),
     setPixelColor(uint16_t n, uint8_t r, uint8_t g, uint8_t b),
     setPixelColor(uint16_t n, uint32_t c),
