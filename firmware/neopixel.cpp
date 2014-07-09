@@ -337,9 +337,9 @@ void Adafruit_NeoPixel::show(void) {
       mask = 0x800000; // reset the mask
       i = i-3;      // decrement bytes remaining
       r = *ptr++;   // Next red byte value
-      g = *ptr++;   // Next green byte value
       b = *ptr++;   // Next blue byte value
-      c = ((uint32_t)r << 16) | ((uint32_t)g <<  8) | b; // Pack the next 3 bytes to keep timing tight
+      g = *ptr++;   // Next green byte value
+      c = ((uint32_t)r << 16) | ((uint32_t)b <<  8) | g; // Pack the next 3 bytes to keep timing tight
       j = 0;        // reset the 24-bit counter
       PIN_MAP[pin].gpio_peripheral->BRR = PIN_MAP[pin].gpio_pin; // LOW
       for( ;; ) {   // ... pixel done
@@ -419,8 +419,11 @@ void Adafruit_NeoPixel::setPixelColor(
         *p++ = r;
         *p = b;
         break;
-      case TM1829: // TM1829 is special RGB order
+      case TM1829: // TM1829 is special RBG order
         if(r == 255) r = 254; // 255 on RED channel causes display to be in a special mode.
+        *p++ = b;
+        *p = g;
+        break;
       case WS2811: // WS2811 is RGB order
       case TM1803: // TM1803 is RGB order
       default:     // default is RGB order
@@ -451,8 +454,11 @@ void Adafruit_NeoPixel::setPixelColor(uint16_t n, uint32_t c) {
         *p++ = r;
         *p = b;
         break;
-      case TM1829: // TM1829 is special RGB order
+      case TM1829: // TM1829 is special RBG order
         if(r == 255) r = 254; // 255 on RED channel causes display to be in a special mode.
+        *p++ = b;
+        *p = g;
+        break;
       case WS2811: // WS2811 is RGB order
       case TM1803: // TM1803 is RGB order
       default:     // default is RGB order
