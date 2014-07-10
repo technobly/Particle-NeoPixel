@@ -421,6 +421,7 @@ void Adafruit_NeoPixel::setPixelColor(
         break;
       case TM1829: // TM1829 is special RBG order
         if(r == 255) r = 254; // 255 on RED channel causes display to be in a special mode.
+        *p++ = r;
         *p++ = b;
         *p = g;
         break;
@@ -456,6 +457,7 @@ void Adafruit_NeoPixel::setPixelColor(uint16_t n, uint32_t c) {
         break;
       case TM1829: // TM1829 is special RBG order
         if(r == 255) r = 254; // 255 on RED channel causes display to be in a special mode.
+        *p++ = r;
         *p++ = b;
         *p = g;
         break;
