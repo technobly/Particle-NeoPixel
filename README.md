@@ -6,7 +6,10 @@ Implementation based on Adafruit's NeoPixel Library.
 Library currently supports WS2812, WS2812B GRB 800kHz style pixels, strips and sticks!
 WS2811 RGB 400kHz style pixels, strips and sticks!
 
-Also supports Radio Shack Tri-Color LED Strip with TM1803 controller 400kHz bitstream.
+Also supports these less common pixels
+---
+- Radio Shack Tri-Color LED Strip with TM1803 controller 400kHz bitstream.
+- TM1829 pixels, many [details here.](https://community.spark.io/t/neopixel-library-for-tm1829-controller-resolved/5363)
 
 Components Required
 ---
@@ -36,7 +39,7 @@ Nuances
 - Make sure get the # of pixels, pin number, type of pixels correct
 
 - NeoPixels require 5V level inputs and the Spark Core only has 3.3V level outputs. Level shifting is
-necessary, the Spark Shield Shield has the [TXB0108PWR](http://www.digikey.com/product-search/en?pv7=2&k=TXB0108PWR) 3.3V to 5V level shifter built in, alternatively you can wire up your own with a [SN74HCT245N](http://www.digikey.com/product-detail/en/SN74HCT245N/296-1612-5-ND/277258), or [SN74HCT125N](http://www.digikey.com/product-detail/en/SN74HCT125N/296-8386-5-ND/376860).
+necessary, the Spark Shield Shield has the [TXB0108PWR](http://www.digikey.com/product-search/en?pv7=2&k=TXB0108PWR) 3.3V to 5V level shifter built in (but has been known to oscillate at 50MHz with wire length longer than 6"), alternatively you can wire up your own with a [SN74HCT245N](http://www.digikey.com/product-detail/en/SN74HCT245N/296-1612-5-ND/277258), or [SN74HCT125N](http://www.digikey.com/product-detail/en/SN74HCT125N/296-8386-5-ND/376860). These are rock solid.
 
 
 Building locally
@@ -55,5 +58,6 @@ Useful Links
 ---
 
 - NeoPixel Guide: https://learn.adafruit.com/adafruit-neopixel-uberguide
-- Octal Level Translator Breakout Board: https://www.adafruit.com/products/395
-- Quad Level Shifter IC: https://www.adafruit.com/product/1787
+- Quad Level Shifter IC: [SN74ACHT125N](https://www.adafruit.com/product/1787) (Adafruit)
+- Quad Level Shifter IC: [SN74HCT125N](http://www.digikey.com/product-detail/en/SN74HCT125N/296-8386-5-ND/376860) (Digikey)
+- Quad Level Shifter IC: [SN74AHCT125N](http://www.digikey.com/product-detail/en/SN74AHCT125N/296-4655-5-ND/375798) (Digikey)
