@@ -4,8 +4,9 @@
   Currently handles 800 KHz and 400kHz bitstream on Spark Core, 
   WS2812, WS2812B and WS2811.
 
-  Also supports Radio Shack Tri-Color Strip with TM1803 controller
-  400kHz bitstream.
+  Also supports:
+  - Radio Shack Tri-Color Strip with TM1803 controller 400kHz bitstream.
+  - TM1829 pixels
   
   PLEASE NOTE that the NeoPixels require 5V level inputs 
   and the Spark Core only has 3.3V level outputs. Level shifting is
@@ -16,12 +17,6 @@
 
   [SN74HCT245N] 
   http://www.digikey.com/product-detail/en/SN74HCT245N/296-1612-5-ND/277258
-
-  [TXB0108PWR] 
-  http://www.digikey.com/product-search/en?pv7=2&k=TXB0108PWR
-
-  If you have a Spark Shield Shield, the TXB0108PWR 3.3V to 5V level 
-  shifter is built in.
 
   Written by Phil Burgess / Paint Your Dragon for Adafruit Industries.
   Modified to work with Spark Core by Technobly.
