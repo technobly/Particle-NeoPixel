@@ -4,8 +4,9 @@
   Currently handles 800 KHz and 400kHz bitstream on Spark Core, 
   WS2812, WS2812B and WS2811.
 
-  Also supports Radio Shack Tri-Color Strip with TM1803 controller
-  400kHz bitstream.
+  Also supports:
+  - Radio Shack Tri-Color Strip with TM1803 controller 400kHz bitstream.
+  - TM1829 pixels
   
   Written by Phil Burgess / Paint Your Dragon for Adafruit Industries.
   Modified to work with Spark Core by Technobly.
