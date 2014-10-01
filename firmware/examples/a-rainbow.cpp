@@ -6,13 +6,13 @@
  */
 
 #include "application.h"
-//#include "spark_disable_wlan.h" (for faster local debugging only)
+//#include "spark_disable_wlan.h" // For faster local debugging only
 #include "neopixel/neopixel.h"
 
 // IMPORTANT: Set pixel COUNT, PIN and TYPE
 #define PIXEL_PIN D2
 #define PIXEL_COUNT 10
-#define PIXEL_TYPE WS2812B
+#define PIXEL_TYPE TM1829
 
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(PIXEL_COUNT, PIXEL_PIN, PIXEL_TYPE);
 

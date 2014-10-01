@@ -45,6 +45,7 @@
 #define WS2812B  0x02 // 800 KHz datastream (NeoPixel)
 #define WS2811   0x00 // 400 KHz datastream (NeoPixel)
 #define TM1803   0x03 // 400 KHz datastream (Radio Shack Tri-Color Strip)
+#define TM1829   0x04 // 800 KHz datastream ()
   
 class Adafruit_NeoPixel {
 
@@ -56,7 +57,7 @@ class Adafruit_NeoPixel {
 
   void
     begin(void),
-    show(void),
+    show(void) __attribute__((optimize("Ofast"))),
     setPin(uint8_t p),
     setPixelColor(uint16_t n, uint8_t r, uint8_t g, uint8_t b),
     setPixelColor(uint16_t n, uint32_t c),
