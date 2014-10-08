@@ -23,7 +23,7 @@ void setup()
 }
 void loop() 
 {
-  rainbow(20);
+  rainbow(PIXEL_COUNT);
 }
 
 void rainbow(uint8_t wait) {
