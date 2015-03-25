@@ -6,8 +6,9 @@
  */
 
 #include "application.h"
-//#include "spark_disable_wlan.h" // For faster local debugging only
 #include "neopixel/neopixel.h"
+
+SYSTEM_MODE(AUTOMATIC);
 
 // IMPORTANT: Set pixel COUNT, PIN and TYPE
 #define PIXEL_PIN D2

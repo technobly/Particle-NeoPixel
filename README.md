@@ -1,7 +1,7 @@
 SparkCore-NeoPixel
 ==================
 
-A library for manipulating NeoPixel RGB LEDs for the Spark Core.
+A library for manipulating NeoPixel RGB LEDs for the Spark Core and Photon.
 Implementation based on Adafruit's NeoPixel Library.
 Library currently supports WS2812, WS2812B GRB 800kHz style pixels, strips and sticks!
 WS2811 RGB 400kHz style pixels, strips and sticks!
@@ -38,7 +38,7 @@ Nuances
 
 - Make sure get the # of pixels, pin number, type of pixels correct
 
-- NeoPixels require 5V logic level inputs and the Spark Core only has 3.3V logic level digital outputs. Level shifting from 3.3V to 5V is
+- NeoPixels require 5V logic level inputs and the Spark Core and Photon only have 3.3V logic level digital outputs. Level shifting from 3.3V to 5V is
 necessary, the Spark Shield Shield has the [TXB0108PWR](http://www.digikey.com/product-search/en?pv7=2&k=TXB0108PWR) 3.3V to 5V level shifter built in (but has been known to oscillate at 50MHz with wire length longer than 6"), alternatively you can wire up your own with a [SN74HCT245N](http://www.digikey.com/product-detail/en/SN74HCT245N/296-1612-5-ND/277258), or [SN74HCT125N](http://www.digikey.com/product-detail/en/SN74HCT125N/296-8386-5-ND/376860). These are rock solid.
 
 
@@ -48,11 +48,18 @@ Building locally
 If you are building locally, place the files here:
 
 ```
-..\core-firmware\inc\neopixel.h
-..\core-firmware\src\application.cpp (renamed from extra-examples.cpp)
-..\core-firmware\src\neopixel.cpp
-..\core-firmware\src\build.mk (optional, if you have your own make file going, just add the neopixel.cpp to it)
+
+..\firmware\user\neo\application.cpp (renamed from extra-examples.cpp)
+..\firmware\user\neo\neopixel.h
+..\firmware\user\neo\neopixel.cpp
 ```
+
+Compile and program via DFU over USB with:
+
+```
+cd firmware/main
+make v=1 APP=neo PLATFORM=photon clean all
+make v=1 APP=neo PLATFORM=photon program-dfu
 
 Useful Links
 ---

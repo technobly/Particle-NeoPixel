@@ -1,13 +1,13 @@
 /*-------------------------------------------------------------------------
   Spark Core library to control WS2811/WS2812 based RGB
   LED devices such as Adafruit NeoPixel strips.
-  Currently handles 800 KHz and 400kHz bitstream on Spark Core, 
+  Currently handles 800 KHz and 400kHz bitstream on Spark Core,
   WS2812, WS2812B and WS2811.
 
   Also supports:
   - Radio Shack Tri-Color Strip with TM1803 controller 400kHz bitstream.
   - TM1829 pixels
-  
+
   Written by Phil Burgess / Paint Your Dragon for Adafruit Industries.
   Modified to work with Spark Core by Technobly.
   Contributions by PJRC and other members of the open source community.
@@ -37,6 +37,20 @@
   -------------------------------------------------------------------------*/
 
 #include "neopixel.h"
+#include "pinmap_impl.h"
+
+#if PLATFORM_ID == 0 // Core
+  #define pinLO(_pin) (PIN_MAP[_pin].gpio_peripheral->BRR = PIN_MAP[_pin].gpio_pin)
+  #define pinHI(_pin) (PIN_MAP[_pin].gpio_peripheral->BSRR = PIN_MAP[_pin].gpio_pin)
+#elif PLATFORM_ID == 6 // Photon
+  STM32_Pin_Info* PIN_MAP = HAL_Pin_Map();
+  #define pinLO(_pin) (PIN_MAP[_pin].gpio_peripheral->BSRRH = PIN_MAP[_pin].gpio_pin)
+  #define pinHI(_pin) (PIN_MAP[_pin].gpio_peripheral->BSRRL = PIN_MAP[_pin].gpio_pin)
+#else
+  #error "*** PLATFORM_ID not supported by this library. PLATFORM should be Core or Photon ***"
+#endif
+// fast pin access
+#define pinSet(_pin, _hilo) (_hilo ? pinHI(_pin) : pinLO(_pin))
 
 Adafruit_NeoPixel::Adafruit_NeoPixel(uint16_t n, uint8_t p, uint8_t t) : \
   numLEDs(n), numBytes(n*3), type(t), pin(p), pixels(NULL)
@@ -86,7 +100,7 @@ void Adafruit_NeoPixel::show(void) {
 
   __disable_irq(); // Need 100% focus on instruction timing
 
-  volatile uint32_t 
+  volatile uint32_t
     c,    // 24-bit pixel color
     mask; // 8-bit mask
   volatile uint16_t i = numBytes; // Output loop counter
@@ -96,7 +110,7 @@ void Adafruit_NeoPixel::show(void) {
     g,              // Current green byte value
     r,              // Current red byte value
     b;              // Current blue byte value
-  
+
   if(type == WS2812B) { // same as WS2812, 800 KHz bitstream
     while(i) { // While bytes left... (3 bytes = 1 pixel)
       mask = 0x800000; // reset the mask
@@ -107,11 +121,12 @@ void Adafruit_NeoPixel::show(void) {
       c = ((uint32_t)g << 16) | ((uint32_t)r <<  8) | b; // Pack the next 3 bytes to keep timing tight
       j = 0;        // reset the 24-bit counter
       do {
-        PIN_MAP[pin].gpio_peripheral->BSRR = PIN_MAP[pin].gpio_pin; // HIGH
+        pinSet(pin, HIGH); // HIGH
         if (c & mask) { // if masked bit is high
           // WS2812 spec             700ns HIGH
           // Adafruit on Arduino    (meas. 812ns)
           // This lib on Spark Core (meas. 792ns)
+          // This lib on Photon     (meas. 792ns)
           asm volatile(
             "mov r0, r0" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
@@ -120,28 +135,53 @@ void Adafruit_NeoPixel::show(void) {
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
-            "nop" "\n\t" 
+            "nop" "\n\t" "nop" "\n\t"
+#if PLATFORM_ID == 6 // Photon
+            "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+            "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+            "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+            "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+            "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+            "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+            "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+            "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+#endif
             ::: "r0", "cc", "memory");
           // WS2812 spec             600ns LOW
           // Adafruit on Arduino    (meas. 436ns)
-          // This lib on Spark Core (meas. 472ns)
-          PIN_MAP[pin].gpio_peripheral->BRR = PIN_MAP[pin].gpio_pin; // LOW
+          // This lib on Spark Core (meas. 460ns)
+          // This lib on Photon     (meas. 434ns)
+          pinSet(pin, LOW); // LOW
           asm volatile(
-            "mov r0, r0" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
-            "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+            "mov r0, r0" "\n\t"
+#if PLATFORM_ID == 6 // Photon
+            "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+            "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+            "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+            "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+            "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+            "nop" "\n\t"
+#endif
             ::: "r0", "cc", "memory");
         }
         else { // else masked bit is low
           // WS2812 spec             350ns HIGH
           // Adafruit on Arduino    (meas. 312ns)
-          // This lib on Spark Core (meas. 306ns)
+          // This lib on Spark Core (meas. 305ns)
+          // This lib on Photon     (meas. 308ns)
           asm volatile(
             "mov r0, r0" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+#if PLATFORM_ID == 6 // Photon
+            "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+            "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+            "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+#endif
             ::: "r0", "cc", "memory");
           // WS2812 spec             800ns LOW
           // Adafruit on Arduino    (meas. 938ns)
-          // This lib on Spark Core (meas. 932ns)
-          PIN_MAP[pin].gpio_peripheral->BRR = PIN_MAP[pin].gpio_pin; // LOW
+          // This lib on Spark Core (meas. 930ns)
+          // This lib on Photon     (meas. 934ns)
+          pinSet(pin, LOW); // LOW
           asm volatile(
             "mov r0, r0" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
@@ -149,13 +189,64 @@ void Adafruit_NeoPixel::show(void) {
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+            "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+#if PLATFORM_ID == 6 // Photon
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+            "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+            "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+            "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+            "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+            "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+            "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+            "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+            "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
+            "nop" "\n\t"
+#endif
             ::: "r0", "cc", "memory");
         }
         mask >>= 1;
       } while ( ++j < 24 ); // ... pixel done
     } // end while(i) ... no more pixels
+  }
+  else if(type == WS2812B2) { // WS2812B with DWT timer
+#if PLATFORM_ID == 6 // Photon
+    #define CYCLES_800_T0H  25 // 312ns (meas. 300ns)
+    #define CYCLES_800_T0L  70 // 938ns (meas. 940ns)
+    #define CYCLES_800_T1H  80 // 812ns (meas. 792ns)
+    #define CYCLES_800_T1L  8  // 436ns (meas. 425ns)
+
+    volatile uint32_t cyc;
+
+    while(i) { // While bytes left... (3 bytes = 1 pixel)
+      mask = 0x800000; // reset the mask
+      i = i-3;      // decrement bytes remaining
+      g = *ptr++;   // Next green byte value
+      r = *ptr++;   // Next red byte value
+      b = *ptr++;   // Next blue byte value
+      c = ((uint32_t)g << 16) | ((uint32_t)r <<  8) | b; // Pack the next 3 bytes to keep timing tight
+      j = 0;        // reset the 24-bit counter
+      do {
+        cyc = DWT->CYCCNT;
+        pinSet(pin, HIGH); // HIGH
+        if (c & mask) { // if masked bit is high
+          while(DWT->CYCCNT - cyc < CYCLES_800_T1H);
+          pinSet(pin, LOW);
+          cyc = DWT->CYCCNT;
+          while(DWT->CYCCNT - cyc < CYCLES_800_T1L);
+        }
+        else { // else masked bit is low
+          while(DWT->CYCCNT - cyc < CYCLES_800_T0H);
+          pinSet(pin, LOW);
+          cyc = DWT->CYCCNT;
+          while(DWT->CYCCNT - cyc < CYCLES_800_T0L);
+        }
+        mask >>= 1;
+      } while ( ++j < 24 ); // ... pixel done
+    } // end while(i) ... no more pixels
+#else
+    #error "*** Sorry, only the Photon is supported with WS2812B2 pixel type! ***"
+#endif
   }
   else if(type == WS2811) { // WS2811, 400 KHz bitstream
     while(i) { // While bytes left... (3 bytes = 1 pixel)
@@ -167,7 +258,7 @@ void Adafruit_NeoPixel::show(void) {
       c = ((uint32_t)r << 16) | ((uint32_t)g <<  8) | b; // Pack the next 3 bytes to keep timing tight
       j = 0;        // reset the 24-bit counter
       do {
-        PIN_MAP[pin].gpio_peripheral->BSRR = PIN_MAP[pin].gpio_pin; // HIGH
+        pinSet(pin, HIGH); // HIGH
         if (c & mask) { // if masked bit is high
           // WS2811 spec             1.20us HIGH
           // Adafruit on Arduino    (meas. 1.25us)
@@ -191,7 +282,7 @@ void Adafruit_NeoPixel::show(void) {
           // WS2811 spec             1.30us LOW
           // Adafruit on Arduino    (meas. 1.25us)
           // This lib on Spark Core (meas. 1.25us)
-          PIN_MAP[pin].gpio_peripheral->BRR = PIN_MAP[pin].gpio_pin; // LOW
+          pinSet(pin, LOW); // LOW
           asm volatile(
             "mov r0, r0" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
@@ -220,7 +311,7 @@ void Adafruit_NeoPixel::show(void) {
           // WS2811 spec             2.000us LOW
           // Adafruit on Arduino    (meas. 2.000us)
           // This lib on Spark Core (meas. 2.000us)
-          PIN_MAP[pin].gpio_peripheral->BRR = PIN_MAP[pin].gpio_pin; // LOW
+          pinSet(pin, LOW); // LOW
           asm volatile(
             "mov r0, r0" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
@@ -243,7 +334,7 @@ void Adafruit_NeoPixel::show(void) {
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
-            "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" 
+            "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
             ::: "r0", "cc", "memory");
         }
@@ -255,13 +346,13 @@ void Adafruit_NeoPixel::show(void) {
     while(i) { // While bytes left... (3 bytes = 1 pixel)
       mask = 0x800000; // reset the mask
       i = i-3;      // decrement bytes remaining
-      r = *ptr++;   // Next green byte value
-      g = *ptr++;   // Next red byte value
-      b = *ptr++;   // Next blue byte value
+      r = *ptr++;   // Next red byte value
+      g = *ptr++;   // Next blue byte value
+      b = *ptr++;   // Next green byte value
       c = ((uint32_t)r << 16) | ((uint32_t)g <<  8) | b; // Pack the next 3 bytes to keep timing tight
       j = 0;        // reset the 24-bit counter
       do {
-        PIN_MAP[pin].gpio_peripheral->BSRR = PIN_MAP[pin].gpio_pin; // HIGH
+        pinSet(pin, HIGH); // HIGH
         if (c & mask) { // if masked bit is high
           // TM1803 spec             1.36us HIGH
           // Pololu on Arduino      (meas. 1.31us)
@@ -287,8 +378,8 @@ void Adafruit_NeoPixel::show(void) {
           // TM1803 spec             680ns LOW
           // Pololu on Arduino      (meas. 1.024us)
           // This lib on Spark Core (meas. 670ns)
-          PIN_MAP[pin].gpio_peripheral->BRR = PIN_MAP[pin].gpio_pin; // LOW
-          asm volatile(  
+          pinSet(pin, LOW); // LOW
+          asm volatile(
             "mov r0, r0" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
@@ -311,7 +402,7 @@ void Adafruit_NeoPixel::show(void) {
           // TM1803 spec             1.36us LOW
           // Pololu on Arduino      (meas. 2.00us)
           // This lib on Spark Core (meas. 1.36us)
-          PIN_MAP[pin].gpio_peripheral->BRR = PIN_MAP[pin].gpio_pin; // LOW
+          pinSet(pin, LOW); // LOW
           asm volatile(
             "mov r0, r0" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
@@ -342,7 +433,7 @@ void Adafruit_NeoPixel::show(void) {
       g = *ptr++;   // Next green byte value
       c = ((uint32_t)r << 16) | ((uint32_t)b <<  8) | g; // Pack the next 3 bytes to keep timing tight
       j = 0;        // reset the 24-bit counter
-      PIN_MAP[pin].gpio_peripheral->BRR = PIN_MAP[pin].gpio_pin; // LOW
+      pinSet(pin, LOW); // LOW
       for( ;; ) {   // ... pixel done
         if (c & mask) { // if masked bit is high
           // TM1829 spec             800ns LOW
@@ -359,12 +450,12 @@ void Adafruit_NeoPixel::show(void) {
           j++;
           // TM1829 spec             300ns HIGH
           // This lib on Spark Core (meas. 319ns)
-          PIN_MAP[pin].gpio_peripheral->BSRR = PIN_MAP[pin].gpio_pin; // HIGH
+          pinSet(pin, HIGH); // HIGH
           asm volatile(
             "mov r0, r0" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
             ::: "r0", "cc", "memory");
           if(j==24) break;
-          PIN_MAP[pin].gpio_peripheral->BRR = PIN_MAP[pin].gpio_pin; // LOW
+          pinSet(pin, LOW); // LOW
         }
         else { // else masked bit is low
           // TM1829 spec             300ns LOW
@@ -374,7 +465,7 @@ void Adafruit_NeoPixel::show(void) {
             ::: "r0", "cc", "memory");
           // TM1829 spec             800ns HIGH
           // This lib on Spark Core (meas. 805ns)
-          PIN_MAP[pin].gpio_peripheral->BSRR = PIN_MAP[pin].gpio_pin; // HIGH
+          pinSet(pin, HIGH); // HIGH
           j++;
           mask >>= 1; // Do this task during the long delay of this bit
           asm volatile(
@@ -386,7 +477,7 @@ void Adafruit_NeoPixel::show(void) {
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
             ::: "r0", "cc", "memory");
           if(j==24) break;
-          PIN_MAP[pin].gpio_peripheral->BRR = PIN_MAP[pin].gpio_pin; // LOW
+          pinSet(pin, LOW); // LOW
         }
       }
     } // end while(i) ... no more pixels

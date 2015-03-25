@@ -30,8 +30,9 @@
 /* ======================= includes ================================= */
 
 #include "application.h"
-//#include "spark_disable_wlan.h" (for faster local debugging only)
 #include "neopixel/neopixel.h"
+
+SYSTEM_MODE(AUTOMATIC);
 
 /* ======================= prototypes =============================== */
 
