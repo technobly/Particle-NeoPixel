@@ -49,9 +49,13 @@ uint32_t Wheel(byte WheelPos);
 #define PIXEL_TYPE WS2812B
 
 // Parameter 1 = number of pixels in strip
+//               note: for some stripes like those with the TM1829, you
+//                     need to count the number of segments, i.e. the
+//                     number of controllers in your stripe, not the number
+//                     of individual LEDs!
 // Parameter 2 = pin number (most are valid)
 //               note: if not specified, D2 is selected for you.
-// Parameter 3 = pixel type [ WS2812, WS2812B, WS2811, TM1803 ]
+// Parameter 3 = pixel type [ WS2812, WS2812B, WS2811, TM1803, TM1829 ]
 //               note: if not specified, WS2812B is selected for you.
 //               note: RGB order is automatically applied to WS2811,
 //                     WS2812/WS2812B/TM1803 is GRB order.
