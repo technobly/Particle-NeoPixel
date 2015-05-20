@@ -638,3 +638,7 @@ void Adafruit_NeoPixel::setBrightness(uint8_t b) {
     brightness = newBrightness;
   }
 }
+
+void Adafruit_NeoPixel::clear(void) {
+  memset(pixels, 0, numBytes);
+}
