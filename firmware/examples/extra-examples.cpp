@@ -1,7 +1,7 @@
 /*-------------------------------------------------------------------------
-  Spark Core library to control WS2811/WS2812 based RGB
+  Spark Core and Photon library to control WS2811/WS2812 based RGB
   LED devices such as Adafruit NeoPixel strips.
-  Currently handles 800 KHz and 400kHz bitstream on Spark Core, 
+  Currently handles 800 KHz and 400kHz bitstream on Spark Core and Photon, 
   WS2812, WS2812B and WS2811.
 
   Also supports:
@@ -9,8 +9,9 @@
   - TM1829 pixels
   
   PLEASE NOTE that the NeoPixels require 5V level inputs 
-  and the Spark Core only has 3.3V level outputs. Level shifting is
-  necessary, but will require a fast device such as one of the following:
+  and the Spark Core and Photon only have 3.3V level outputs. 
+  Level shifting is necessary, but will require a fast device such as one 
+  of the following:
 
   [SN74HCT125N]
   http://www.digikey.com/product-detail/en/SN74HCT125N/296-8386-5-ND/376860
@@ -19,7 +20,7 @@
   http://www.digikey.com/product-detail/en/SN74HCT245N/296-1612-5-ND/277258
 
   Written by Phil Burgess / Paint Your Dragon for Adafruit Industries.
-  Modified to work with Spark Core by Technobly.
+  Modified to work with Spark Core and Photon by Technobly.
   Contributions by PJRC and other members of the open source community.
 
   Adafruit invests time and resources providing this open source code,
