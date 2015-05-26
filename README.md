@@ -37,9 +37,10 @@ Nuances
 ---
 
 - Make sure get the # of pixels, pin number, type of pixels correct
-
 - NeoPixels require 5V logic level inputs and the Spark Core and Photon only have 3.3V logic level digital outputs. Level shifting from 3.3V to 5V is
 necessary, the Particle Shield Shield has the [TXB0108PWR](http://www.digikey.com/product-search/en?pv7=2&k=TXB0108PWR) 3.3V to 5V level shifter built in (but has been known to oscillate at 50MHz with wire length longer than 6"), alternatively you can wire up your own with a [SN74HCT245N](http://www.digikey.com/product-detail/en/SN74HCT245N/296-1612-5-ND/277258), or [SN74HCT125N](http://www.digikey.com/product-detail/en/SN74HCT125N/296-8386-5-ND/376860). These are rock solid.
+- Don't use `getPixelColor()` to move pixel data around when you are also using `setBrightness()`.  When the brightness is set, all `setPixelColor()` calls will end up scaling colors to dim them before they are stored in memory.  When using `getPixelColor()` the stored dimmed color is rescaled back up to the original color.  However, due to some loss of precision with the math, it is not possible to recreate this color data perfectly.  This is especially true with low brightness values.  If you `get` and `set` color data repeatedly with a dimmed pixel, it will eventually continue to decrease in value until it is equal to zero.
+- When changing the brightness, always call `setPixelColor()` first with fresh un-dimmed color data, then call `setBrightness()`, and finally `show()`.
 
 
 Building locally
