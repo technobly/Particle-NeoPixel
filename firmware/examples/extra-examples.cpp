@@ -96,7 +96,7 @@ void loop() {
   
   //rainbowCycle(20);
   
-  //colorAll(strip.Color(0, 255, 255), 50); // Magenta
+  //colorAll(strip.Color(0, 255, 255), 50); // Cyan
 }
 
 // Set all pixels in the strip to a solid color, then wait (ms)
