@@ -59,7 +59,7 @@ Compile and program via DFU over USB with:
 
 ```
 cd firmware/main
-make v=1 APP=neo PLATFORM=photon clean all program-dfu
+make clean all PLATFORM=photon APP=neo -s program-dfu
 
 Useful Links
 ---
