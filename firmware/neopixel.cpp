@@ -800,7 +800,7 @@ uint16_t Adafruit_NeoPixel::numPixels(void) const {
 }
 
 uint16_t Adafruit_NeoPixel::getNumLeds(void) const {
-  return numLEDs;
+  return numPixels();
 }
 
 // Adjust output brightness; 0=darkest (off), 255=brightest.  This does
