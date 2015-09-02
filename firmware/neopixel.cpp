@@ -1,22 +1,22 @@
 /*-------------------------------------------------------------------------
   Spark Core and Photon library to control WS2811/WS2812 based RGB
   LED devices such as Adafruit NeoPixel strips.
-  Currently handles 800 KHz and 400kHz bitstream on Spark Core and Photon, 
+  Currently handles 800 KHz and 400kHz bitstream on Spark Core and Photon,
   WS2812, WS2812B and WS2811.
 
   Also supports:
   - Radio Shack Tri-Color Strip with TM1803 controller 400kHz bitstream.
   - TM1829 pixels
-  
-  PLEASE NOTE that the NeoPixels require 5V level inputs 
-  and the Spark Core and Photon only have 3.3V level outputs. 
-  Level shifting is necessary, but will require a fast device such as one 
+
+  PLEASE NOTE that the NeoPixels require 5V level inputs
+  and the Spark Core and Photon only have 3.3V level outputs.
+  Level shifting is necessary, but will require a fast device such as one
   of the following:
 
   [SN74HCT125N]
   http://www.digikey.com/product-detail/en/SN74HCT125N/296-8386-5-ND/376860
 
-  [SN74HCT245N] 
+  [SN74HCT245N]
   http://www.digikey.com/product-detail/en/SN74HCT245N/296-1612-5-ND/277258
 
   Written by Phil Burgess / Paint Your Dragon for Adafruit Industries.
@@ -62,7 +62,7 @@
 // fast pin access
 #define pinSet(_pin, _hilo) (_hilo ? pinHI(_pin) : pinLO(_pin))
 
-Adafruit_NeoPixel::Adafruit_NeoPixel(uint16_t n, uint8_t p, uint8_t t) : 
+Adafruit_NeoPixel::Adafruit_NeoPixel(uint16_t n, uint8_t p, uint8_t t) :
   numLEDs(n), numBytes(n*3), pin(p), brightness(0), pixels(NULL), type(t), endTime(0)
 {
   if((pixels = (uint8_t *)malloc(numBytes))) {
@@ -731,6 +731,24 @@ void Adafruit_NeoPixel::setPixelColor(uint16_t n, uint32_t c) {
   }
 }
 
+void Adafruit_NeoPixel::setColor(uint16_t aLedNumber, byte aRed, byte aGreen, byte aBlue) {
+  return setPixelColor(aLedNumber, (uint8_t) aRed, (uint8_t) aGreen, (uint8_t) aBlue);
+}
+
+void Adafruit_NeoPixel::setColorScaled(uint16_t aLedNumber, byte aRed, byte aGreen, byte aBlue, byte aScaling) {
+  // scale RGB with a common brightness parameter
+  setColor(aLedNumber, (aRed*aScaling)>>8, (aGreen*aScaling)>>8, (aBlue*aScaling)>>8);
+}
+
+byte Adafruit_NeoPixel::brightnessToPWM(byte aBrightness) {
+  static const byte pwmLevels[16] = { 0, 1, 2, 3, 4, 6, 8, 12, 23, 36, 48, 70, 95, 135, 190, 255 };
+  return pwmLevels[aBrightness>>4];
+}
+
+void Adafruit_NeoPixel::setColorDimmed(uint16_t aLedNumber, byte aRed, byte aGreen, byte aBlue, byte aBrightness) {
+  setColorScaled(aLedNumber, aRed, aGreen, aBlue, brightnessToPWM(aBrightness));
+}
+
 // Convert separate R,G,B into packed 32-bit RGB color.
 // Packed format is always RGB, regardless of LED strand color order.
 uint32_t Adafruit_NeoPixel::Color(uint8_t r, uint8_t g, uint8_t b) {
@@ -778,6 +796,10 @@ uint8_t *Adafruit_NeoPixel::getPixels(void) const {
 }
 
 uint16_t Adafruit_NeoPixel::numPixels(void) const {
+  return numLEDs;
+}
+
+uint16_t Adafruit_NeoPixel::getNumLeds(void) const {
   return numLEDs;
 }
 
