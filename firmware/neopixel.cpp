@@ -52,12 +52,12 @@
 #if PLATFORM_ID == 0 // Core
   #define pinLO(_pin) (PIN_MAP[_pin].gpio_peripheral->BRR = PIN_MAP[_pin].gpio_pin)
   #define pinHI(_pin) (PIN_MAP[_pin].gpio_peripheral->BSRR = PIN_MAP[_pin].gpio_pin)
-#elif PLATFORM_ID == 6 // Photon
+#elif (PLATFORM_ID == 6) || (PLATFORM_ID == 8) // Photon (6) or P1 (8)
   STM32_Pin_Info* PIN_MAP2 = HAL_Pin_Map(); // Pointer required for highest access speed
   #define pinLO(_pin) (PIN_MAP2[_pin].gpio_peripheral->BSRRH = PIN_MAP2[_pin].gpio_pin)
   #define pinHI(_pin) (PIN_MAP2[_pin].gpio_peripheral->BSRRL = PIN_MAP2[_pin].gpio_pin)
 #else
-  #error "*** PLATFORM_ID not supported by this library. PLATFORM should be Core or Photon ***"
+  #error "*** PLATFORM_ID not supported by this library. PLATFORM should be Core, Photon, or P1 ***"
 #endif
 // fast pin access
 #define pinSet(_pin, _hilo) (_hilo ? pinHI(_pin) : pinLO(_pin))
@@ -147,7 +147,7 @@ void Adafruit_NeoPixel::show(void) {
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
             "nop" "\n\t" "nop" "\n\t"
-#if PLATFORM_ID == 6 // Photon
+#if (PLATFORM_ID == 6) || (PLATFORM_ID == 8) // Photon (6) or P1 (8)
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
@@ -165,7 +165,7 @@ void Adafruit_NeoPixel::show(void) {
           pinSet(pin, LOW); // LOW
           asm volatile(
             "mov r0, r0" "\n\t"
-#if PLATFORM_ID == 6 // Photon
+#if (PLATFORM_ID == 6) || (PLATFORM_ID == 8) // Photon (6) or P1 (8)
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
@@ -182,7 +182,7 @@ void Adafruit_NeoPixel::show(void) {
           // This lib on Photon     (meas. 308ns)
           asm volatile(
             "mov r0, r0" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
-#if PLATFORM_ID == 6 // Photon
+#if (PLATFORM_ID == 6) || (PLATFORM_ID == 8) // Photon (6) or P1 (8)
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
@@ -202,7 +202,7 @@ void Adafruit_NeoPixel::show(void) {
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
-#if PLATFORM_ID == 6 // Photon
+#if (PLATFORM_ID == 6) || (PLATFORM_ID == 8) // Photon (6) or P1 (8)
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
@@ -222,7 +222,7 @@ void Adafruit_NeoPixel::show(void) {
     } // end while(i) ... no more pixels
   }
   else if(type == WS2812B2) { // WS2812B with DWT timer
-#if PLATFORM_ID == 6 // Photon
+#if (PLATFORM_ID == 6) || (PLATFORM_ID == 8) // Photon (6) or P1 (8)
     #define CYCLES_800_T0H  25 // 312ns (meas. 300ns)
     #define CYCLES_800_T0L  70 // 938ns (meas. 940ns)
     #define CYCLES_800_T1H  80 // 812ns (meas. 792ns)
@@ -289,7 +289,7 @@ void Adafruit_NeoPixel::show(void) {
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
-#if PLATFORM_ID == 6 // Photon
+#if (PLATFORM_ID == 6) || (PLATFORM_ID == 8) // Photon (6) or P1 (8)
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
@@ -323,7 +323,7 @@ void Adafruit_NeoPixel::show(void) {
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
             "nop" "\n\t" "nop" "\n\t"
-#if PLATFORM_ID == 6 // Photon
+#if (PLATFORM_ID == 6) || (PLATFORM_ID == 8) // Photon (6) or P1 (8)
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
@@ -350,7 +350,7 @@ void Adafruit_NeoPixel::show(void) {
             "mov r0, r0" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
-#if PLATFORM_ID == 6 // Photon
+#if (PLATFORM_ID == 6) || (PLATFORM_ID == 8) // Photon (6) or P1 (8)
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
@@ -387,7 +387,7 @@ void Adafruit_NeoPixel::show(void) {
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
-#if PLATFORM_ID == 6 // Photon
+#if (PLATFORM_ID == 6) || (PLATFORM_ID == 8) // Photon (6) or P1 (8)
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
@@ -449,7 +449,7 @@ void Adafruit_NeoPixel::show(void) {
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
-#if PLATFORM_ID == 6 // Photon
+#if (PLATFORM_ID == 6) || (PLATFORM_ID == 8) // Photon (6) or P1 (8)
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
@@ -475,7 +475,7 @@ void Adafruit_NeoPixel::show(void) {
             "mov r0, r0" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
-#if PLATFORM_ID == 6 // Photon
+#if (PLATFORM_ID == 6) || (PLATFORM_ID == 8) // Photon (6) or P1 (8)
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
@@ -500,7 +500,7 @@ void Adafruit_NeoPixel::show(void) {
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
-#if PLATFORM_ID == 6 // Photon
+#if (PLATFORM_ID == 6) || (PLATFORM_ID == 8) // Photon (6) or P1 (8)
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
@@ -529,7 +529,7 @@ void Adafruit_NeoPixel::show(void) {
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
-#if PLATFORM_ID == 6 // Photon
+#if (PLATFORM_ID == 6) || (PLATFORM_ID == 8) // Photon (6) or P1 (8)
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
@@ -573,7 +573,7 @@ void Adafruit_NeoPixel::show(void) {
             "mov r0, r0" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
-#if PLATFORM_ID == 6 // Photon
+#if (PLATFORM_ID == 6) || (PLATFORM_ID == 8) // Photon (6) or P1 (8)
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
@@ -594,7 +594,7 @@ void Adafruit_NeoPixel::show(void) {
           pinSet(pin, HIGH); // HIGH
           asm volatile(
             "mov r0, r0" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
-#if PLATFORM_ID == 6 // Photon
+#if (PLATFORM_ID == 6) || (PLATFORM_ID == 8) // Photon (6) or P1 (8)
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
@@ -608,7 +608,7 @@ void Adafruit_NeoPixel::show(void) {
           // TM1829 spec             300ns LOW
           // This lib on Spark Core (meas. 390ns)
           // This lib on Photon     (meas. 300ns)
-#if PLATFORM_ID == 6 // Photon
+#if (PLATFORM_ID == 6) || (PLATFORM_ID == 8) // Photon (6) or P1 (8)
           asm volatile(
             "mov r0, r0" "\n\t"
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
@@ -630,7 +630,7 @@ void Adafruit_NeoPixel::show(void) {
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
-#if PLATFORM_ID == 6 // Photon
+#if (PLATFORM_ID == 6) || (PLATFORM_ID == 8) // Photon (6) or P1 (8)
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
             "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t" "nop" "\n\t"
