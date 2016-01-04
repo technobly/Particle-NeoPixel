@@ -1,7 +1,7 @@
 Particle-NeoPixel
 =================
 
-A library for manipulating NeoPixel RGB LEDs for the Spark Core and Photon.
+A library for manipulating NeoPixel RGB LEDs for the Spark Core, Photon, P1 and Electron.
 Implementation based on Adafruit's NeoPixel Library.
 Library currently supports WS2812, WS2812B GRB 800kHz style pixels, strips and sticks!
 WS2811 RGB 400kHz style pixels, strips and sticks!
