@@ -1,5 +1,5 @@
-SparkCore-NeoPixel
-==================
+Particle-NeoPixel
+=================
 
 A library for manipulating NeoPixel RGB LEDs for the Spark Core and Photon.
 Implementation based on Adafruit's NeoPixel Library.
@@ -10,6 +10,7 @@ Also supports these less common pixels
 ---
 - Radio Shack Tri-Color LED Strip with TM1803 controller 400kHz bitstream.
 - TM1829 pixels, many [details here.](https://community.particle.io/t/neopixel-library-for-tm1829-controller-resolved/5363)
+- Some functions from the [MessageTorch library](https://github.com/plan44/messagetorch/blob/master/messagetorch.cpp#L58-L134) have been added.
 
 Components Required
 ---
@@ -58,8 +59,11 @@ If you are building locally, place the files here:
 Compile and program via DFU over USB with:
 
 ```
-cd firmware/main
+cd firmware/modules
 make clean all PLATFORM=photon APP=neo -s program-dfu
+make clean all PLATFORM=P1 APP=neo -s program-dfu
+make clean all PLATFORM=electron APP=neo -s program-dfu
+make clean all PLATFORM=core APP=neo -s program-dfu
 
 Useful Links
 ---

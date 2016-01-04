@@ -1,26 +1,26 @@
 /*-------------------------------------------------------------------------
-  Spark Core and Photon library to control WS2811/WS2812 based RGB
+  Spark Core, Photon, P1 and Electron library to control WS2811/WS2812 based RGB
   LED devices such as Adafruit NeoPixel strips.
-  Currently handles 800 KHz and 400kHz bitstream on Spark Core and Photon, 
+  Currently handles 800 KHz and 400kHz bitstream on Spark Core and Photon,
   WS2812, WS2812B and WS2811.
 
   Also supports:
   - Radio Shack Tri-Color Strip with TM1803 controller 400kHz bitstream.
   - TM1829 pixels
-  
-  PLEASE NOTE that the NeoPixels require 5V level inputs 
-  and the Spark Core and Photon only have 3.3V level outputs. 
-  Level shifting is necessary, but will require a fast device such as one 
+
+  PLEASE NOTE that the NeoPixels require 5V level inputs
+  and the Spark Core, Photon, P1 and Electron only have 3.3V level outputs.
+  Level shifting is necessary, but will require a fast device such as one
   of the following:
 
   [SN74HCT125N]
   http://www.digikey.com/product-detail/en/SN74HCT125N/296-8386-5-ND/376860
 
-  [SN74HCT245N] 
+  [SN74HCT245N]
   http://www.digikey.com/product-detail/en/SN74HCT245N/296-1612-5-ND/277258
 
   Written by Phil Burgess / Paint Your Dragon for Adafruit Industries.
-  Modified to work with Spark Core and Photon by Technobly.
+  Modified to work with Particle devices by Technobly.
   Contributions by PJRC and other members of the open source community.
 
   Adafruit invests time and resources providing this open source code,
@@ -83,30 +83,30 @@ void setup() {
 
 void loop() {
   // Some example procedures showing how to display to the pixels:
-  // Do not run more than one of these at a time, or the b/g tasks 
+  // Do not run more than one of these at a time, or the b/g tasks
   // will be blocked.
   //--------------------------------------------------------------
-  
+
   //strip.setPixelColor(0, strip.Color(255, 0, 255));
   //strip.show();
-  
+
   //colorWipe(strip.Color(255, 0, 0), 50); // Red
-  
+
   //colorWipe(strip.Color(0, 255, 0), 50); // Green
-  
+
   //colorWipe(strip.Color(0, 0, 255), 50); // Blue
-  
+
   rainbow(20);
-  
+
   //rainbowCycle(20);
-  
+
   //colorAll(strip.Color(0, 255, 255), 50); // Cyan
 }
 
 // Set all pixels in the strip to a solid color, then wait (ms)
 void colorAll(uint32_t c, uint8_t wait) {
   uint16_t i;
-  
+
   for(i=0; i<strip.numPixels(); i++) {
     strip.setPixelColor(i, c);
   }
