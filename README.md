@@ -64,6 +64,7 @@ make clean all PLATFORM=photon APP=neo -s program-dfu
 make clean all PLATFORM=P1 APP=neo -s program-dfu
 make clean all PLATFORM=electron APP=neo -s program-dfu
 make clean all PLATFORM=core APP=neo -s program-dfu
+```
 
 Useful Links
 ---
