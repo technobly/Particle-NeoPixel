@@ -14,9 +14,9 @@ Also supports these less common pixels
 
 Components Required
 ---
-- A Neopixel digital RGB LED (get at [adafruit.com](adafruit.com))
-- or a Radio Shack Tri-Color LED Strip (get at [radioshack.com](radioshack.com))
-- A Particle Shield Shield or breakout board to supply neopixel's with 5V (see store at [particle.io](particle.io))
+- A Neopixel digital RGB LED (get at [adafruit.com](http://www.adafruit.com))
+- or a Radio Shack Tri-Color LED Strip (get at [radioshack.com](http://www.radioshack.com))
+- A Particle Shield Shield or breakout board to supply neopixel's with 5V (see store at [particle.io](http://www.particle.io))
 
 Example Usage
 ---
