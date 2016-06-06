@@ -1,6 +1,6 @@
 /*
  * This is a minimal example, see extra-examples.cpp for a version
- * with more explantory documentation, example routines, how to 
+ * with more explantory documentation, example routines, how to
  * hook up your pixels and all of the pixel types that are supported.
  *
  */
@@ -17,12 +17,12 @@ SYSTEM_MODE(AUTOMATIC);
 
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(PIXEL_COUNT, PIXEL_PIN, PIXEL_TYPE);
 
-void setup() 
+void setup()
 {
   strip.begin();
   strip.show(); // Initialize all pixels to 'off'
 }
-void loop() 
+void loop()
 {
   rainbow(20);
 }
