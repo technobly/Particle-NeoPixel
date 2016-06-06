@@ -11,6 +11,7 @@ Also supports these less common pixels
 - Radio Shack Tri-Color LED Strip with TM1803 controller 400kHz bitstream.
 - TM1829 pixels, many [details here.](https://community.particle.io/t/neopixel-library-for-tm1829-controller-resolved/5363)
 - Some functions from the [MessageTorch library](https://github.com/plan44/messagetorch/blob/master/messagetorch.cpp#L58-L134) have been added.
+- SK6812MINI "NeoPixel Mini" (use 'WS2812B' as PIXEL_TYPE)
 
 Components Required
 ---
