@@ -8,7 +8,8 @@
 /* ======================= includes ================================= */
 
 #include "application.h"
-#include "neopixel.h"
+#include "neopixel/neopixel.h" // use for Build IDE
+// #include "neopixel.h" // use for local build
 
 /* ======================= prototypes =============================== */
 
