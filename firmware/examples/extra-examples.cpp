@@ -1,8 +1,11 @@
 /*-------------------------------------------------------------------------
-  Spark Core, Photon, P1 and Electron library to control WS2811/WS2812 based RGB
-  LED devices such as Adafruit NeoPixel strips.
-  Currently handles 800 KHz and 400kHz bitstream on Spark Core and Photon,
-  WS2812, WS2812B and WS2811.
+  Spark Core, Photon, P1 and Electron library to control WS2811/WS2812
+  based RGB LED devices such as Adafruit NeoPixel strips.
+
+  Supports:
+  - 800 KHz and 400kHz bitstream WS2812, WS2812B and WS2811
+  - 800 KHz bitstream SK6812RGBW (NeoPixel RGBW pixel strips)
+    (use 'SK6812RGBW' as PIXEL_TYPE)
 
   Also supports:
   - Radio Shack Tri-Color Strip with TM1803 controller 400kHz bitstream.
@@ -31,9 +34,8 @@
 /* ======================= includes ================================= */
 
 #include "application.h"
-#include "neopixel/neopixel.h"
-
-SYSTEM_MODE(AUTOMATIC);
+#include "neopixel/neopixel.h" // use for Build IDE
+// #include "neopixel.h" // use for local build
 
 /* ======================= prototypes =============================== */
 
@@ -44,6 +46,8 @@ void rainbowCycle(uint8_t wait);
 uint32_t Wheel(byte WheelPos);
 
 /* ======================= extra-examples.cpp ======================== */
+
+SYSTEM_MODE(AUTOMATIC);
 
 // IMPORTANT: Set pixel COUNT, PIN and TYPE
 #define PIXEL_COUNT 10
@@ -57,13 +61,14 @@ uint32_t Wheel(byte WheelPos);
 //                     of individual LEDs!
 // Parameter 2 = pin number (most are valid)
 //               note: if not specified, D2 is selected for you.
-// Parameter 3 = pixel type [ WS2812, WS2812B, WS2811, TM1803, TM1829 ]
+// Parameter 3 = pixel type [ WS2812, WS2812B, WS2812B2, WS2811,
+//                             TM1803, TM1829, SK6812RGBW ]
 //               note: if not specified, WS2812B is selected for you.
 //               note: RGB order is automatically applied to WS2811,
-//                     WS2812/WS2812B/TM1803 is GRB order.
+//                     WS2812/WS2812B/WS2812B2/TM1803 is GRB order.
 //
-// 800 KHz bitstream 800 KHz bitstream (most NeoPixel products ...
-//                         ... WS2812 (6-pin part)/WS2812B (4-pin part) )
+// 800 KHz bitstream 800 KHz bitstream (most NeoPixel products
+//               WS2812 (6-pin part)/WS2812B (4-pin part)/SK6812RGBW (RGB+W) )
 //
 // 400 KHz bitstream (classic 'v1' (not v2) FLORA pixels, WS2811 drivers)
 //                   (Radio Shack Tri-Color LED Strip - TM1803 driver
@@ -83,7 +88,7 @@ void setup() {
 
 void loop() {
   // Some example procedures showing how to display to the pixels:
-  // Do not run more than one of these at a time, or the b/g tasks
+  // Do not run more than 15 seconds of these, or the b/g tasks
   // will be blocked.
   //--------------------------------------------------------------
 

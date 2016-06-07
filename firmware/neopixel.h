@@ -1,8 +1,11 @@
 /*-------------------------------------------------------------------------
-  Spark Core, Photon, P1 and Electron library to control WS2811/WS2812 based RGB
-  LED devices such as Adafruit NeoPixel strips.
-  Currently handles 800 KHz and 400kHz bitstream on Spark Core and Photon,
-  WS2812, WS2812B and WS2811.
+  Spark Core, Photon, P1 and Electron library to control WS2811/WS2812
+  based RGB LED devices such as Adafruit NeoPixel strips.
+
+  Supports:
+  - 800 KHz and 400kHz bitstream WS2812, WS2812B and WS2811
+  - 800 KHz bitstream SK6812RGBW (NeoPixel RGBW pixel strips)
+    (use 'SK6812RGBW' as PIXEL_TYPE)
 
   Also supports:
   - Radio Shack Tri-Color Strip with TM1803 controller 400kHz bitstream.
@@ -53,12 +56,13 @@
 #include "application.h"
 
 // 'type' flags for LED pixels (third parameter to constructor):
+#define WS2811   0x00 // 400 KHz datastream (NeoPixel)
 #define WS2812   0x02 // 800 KHz datastream (NeoPixel)
 #define WS2812B  0x02 // 800 KHz datastream (NeoPixel)
-#define WS2811   0x00 // 400 KHz datastream (NeoPixel)
 #define TM1803   0x03 // 400 KHz datastream (Radio Shack Tri-Color Strip)
 #define TM1829   0x04 // 800 KHz datastream ()
 #define WS2812B2 0x05 // 800 KHz datastream (NeoPixel)
+#define SK6812RGBW 0x06 // 800 KHz datastream (NeoPixel RGBW)
 
 class Adafruit_NeoPixel {
 
@@ -73,11 +77,16 @@ class Adafruit_NeoPixel {
     show(void) __attribute__((optimize("Ofast"))),
     setPin(uint8_t p),
     setPixelColor(uint16_t n, uint8_t r, uint8_t g, uint8_t b),
+    setPixelColor(uint16_t n, uint8_t r, uint8_t g, uint8_t b, uint8_t w),
     setPixelColor(uint16_t n, uint32_t c),
     setBrightness(uint8_t),
     setColor(uint16_t aLedNumber, byte aRed, byte aGreen, byte aBlue),
+    setColor(uint16_t aLedNumber, byte aRed, byte aGreen, byte aBlue, byte aWhite),
     setColorScaled(uint16_t aLedNumber, byte aRed, byte aGreen, byte aBlue, byte aScaling),
+    setColorScaled(uint16_t aLedNumber, byte aRed, byte aGreen, byte aBlue, byte aWhite, byte aScaling),
     setColorDimmed(uint16_t aLedNumber, byte aRed, byte aGreen, byte aBlue, byte aBrightness),
+    setColorDimmed(uint16_t aLedNumber, byte aRed, byte aGreen, byte aBlue, byte aWhite, byte aBrightness),
+    updateLength(uint16_t n),
     clear(void);
   uint8_t
    *getPixels() const,
@@ -86,7 +95,8 @@ class Adafruit_NeoPixel {
     numPixels(void) const,
     getNumLeds(void) const;
   static uint32_t
-    Color(uint8_t r, uint8_t g, uint8_t b);
+    Color(uint8_t r, uint8_t g, uint8_t b),
+    Color(uint8_t r, uint8_t g, uint8_t b, uint8_t w);
   uint32_t
     getPixelColor(uint16_t n) const;
   byte
@@ -94,7 +104,9 @@ class Adafruit_NeoPixel {
 
  private:
 
-  const uint16_t
+  bool
+    begun;         // true if begin() previously called
+  uint16_t
     numLEDs,       // Number of RGB LEDs in strip
     numBytes;      // Size of 'pixels' buffer below
   const uint8_t

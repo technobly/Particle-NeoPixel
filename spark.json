@@ -2,7 +2,7 @@
   "name": "neopixel",
   "author": "Adafruit, Technobly",
   "license": "GNU GPLv3",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "An Implementation of Adafruit's NeoPixel Library for the Spark Core, Photon, P1 and Electron",
   "namespace": "Adafruit_NeoPixel"
 }

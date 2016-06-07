@@ -6,7 +6,8 @@
  */
 
 #include "application.h"
-#include "neopixel/neopixel.h"
+#include "neopixel/neopixel.h" // use for Build IDE
+// #include "neopixel.h" // use for local build
 
 SYSTEM_MODE(AUTOMATIC);
 
@@ -16,6 +17,10 @@ SYSTEM_MODE(AUTOMATIC);
 #define PIXEL_TYPE WS2812B
 
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(PIXEL_COUNT, PIXEL_PIN, PIXEL_TYPE);
+
+// Prototypes for local build, ok to leave in for Build IDE
+void rainbow(uint8_t wait);
+uint32_t Wheel(byte WheelPos);
 
 void setup()
 {

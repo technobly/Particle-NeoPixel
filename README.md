@@ -3,8 +3,12 @@ Particle-NeoPixel
 
 A library for manipulating NeoPixel RGB LEDs for the Spark Core, Photon, P1 and Electron.
 Implementation based on Adafruit's NeoPixel Library.
-Library currently supports WS2812, WS2812B GRB 800kHz style pixels, strips and sticks!
-WS2811 RGB 400kHz style pixels, strips and sticks!
+
+Supported Pixel Types
+---
+- 800 KHz and 400kHz bitstream WS2812, WS2812B and WS2811
+- 800 KHz bitstream SK6812RGBW (NeoPixel RGBW pixel strips)
+  - (use 'SK6812RGBW' as PIXEL_TYPE)
 
 Also supports these less common pixels
 ---
@@ -15,9 +19,9 @@ Also supports these less common pixels
 
 Components Required
 ---
-- A Neopixel digital RGB LED (get at [adafruit.com](adafruit.com))
-- or a Radio Shack Tri-Color LED Strip (get at [radioshack.com](radioshack.com))
-- A Particle Shield Shield or breakout board to supply neopixel's with 5V (see store at [particle.io](particle.io))
+- A Neopixel digital RGB LED (get at [adafruit.com](https://www.adafruit.com))
+- or a Radio Shack Tri-Color LED Strip (get at [radioshack.com](https://www.radioshack.com))
+- A Particle Shield Shield or breakout board to supply neopixel's with 5V (see store at [particle.io](https://www.particle.io))
 
 Example Usage
 ---
@@ -32,6 +36,67 @@ void setup() {
 }
 void loop() {
   // change your pixel colors and call strip.show() again
+}
+```
+
+More Detailed Example Usage
+---
+
+```cpp
+// IMPORTANT: Set pixel COUNT, PIN and TYPE
+#define PIXEL_COUNT 10
+#define PIXEL_PIN D2
+#define PIXEL_TYPE WS2812B
+
+// Parameter 1 = number of pixels in strip
+//               note: for some stripes like those with the TM1829, you
+//                     need to count the number of segments, i.e. the
+//                     number of controllers in your stripe, not the number
+//                     of individual LEDs!
+// Parameter 2 = pin number (most are valid)
+//               note: if not specified, D2 is selected for you.
+// Parameter 3 = pixel type [ WS2812, WS2812B, WS2812B2, WS2811,
+//                             TM1803, TM1829, SK6812RGBW ]
+//               note: if not specified, WS2812B is selected for you.
+//               note: RGB order is automatically applied to WS2811,
+//                     WS2812/WS2812B/WS2812B2/TM1803 is GRB order.
+//
+// 800 KHz bitstream 800 KHz bitstream (most NeoPixel products
+//               WS2812 (6-pin part)/WS2812B (4-pin part)/SK6812RGBW (RGB+W) )
+//
+// 400 KHz bitstream (classic 'v1' (not v2) FLORA pixels, WS2811 drivers)
+//                   (Radio Shack Tri-Color LED Strip - TM1803 driver
+//                    NOTE: RS Tri-Color LED's are grouped in sets of 3)
+
+Adafruit_NeoPixel strip = Adafruit_NeoPixel(PIXEL_COUNT, PIXEL_PIN, PIXEL_TYPE);
+
+// IMPORTANT: To reduce NeoPixel burnout risk, add 1000 uF capacitor across
+// pixel power leads, add 300 - 500 Ohm resistor on first pixel's data input
+// and minimize distance between Arduino and first pixel.  Avoid connecting
+// on a live circuit...if you must, connect GND first.
+
+void setup() {
+  strip.begin();
+  strip.show(); // Initialize all pixels to 'off'
+}
+
+void loop() {
+  // Some example procedures showing how to display to the pixels:
+  // Do not run more than 15 seconds of these, or the b/g tasks
+  // will be blocked.
+  //--------------------------------------------------------------
+
+  // Note, these are not built into the library, check the example
+  // files for these helper functions
+  colorWipe(strip.Color(255, 0, 0), 50); // Red
+  colorWipe(strip.Color(0, 255, 0), 50); // Green
+  colorWipe(strip.Color(0, 0, 255), 50); // Blue
+
+  // SK6812RGBW type strips can do RGB+W
+  // Here we only turn on the WHITE LEDs
+  colorWipe(strip.Color(0, 0, 0, 255), 50); // White
+
+  rainbow(20);
 }
 ```
 
