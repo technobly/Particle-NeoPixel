@@ -1,6 +1,6 @@
 /*-------------------------------------------------------------------------
-  Spark Core, Photon, P1 and Electron library to control WS2811/WS2812
-  based RGB LED devices such as Adafruit NeoPixel strips.
+  Spark Core, Particle Photon, P1, Electron and RedBear Duo library to control
+  WS2811/WS2812 based RGB LED devices such as Adafruit NeoPixel strips.
 
   Supports:
   - 800 KHz and 400kHz bitstream WS2812, WS2812B and WS2811
@@ -12,9 +12,9 @@
   - TM1829 pixels
 
   PLEASE NOTE that the NeoPixels require 5V level inputs
-  and the Spark Core, Photon, P1 and Electron only have 3.3V level outputs.
-  Level shifting is necessary, but will require a fast device such as one
-  of the following:
+  and the Spark Core, Particle Photon, P1, Electron and RedBear Duo only
+  have 3.3V level outputs. Level shifting is necessary, but will require
+  a fast device such as one of the following:
 
   [SN74HCT125N]
   http://www.digikey.com/product-detail/en/SN74HCT125N/296-8386-5-ND/376860

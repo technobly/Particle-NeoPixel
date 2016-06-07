@@ -1,7 +1,8 @@
 Particle-NeoPixel
 =================
 
-A library for manipulating NeoPixel RGB LEDs for the Spark Core, Photon, P1 and Electron.
+A library for manipulating NeoPixel RGB LEDs for the Spark Core, Particle Photon, P1 and Electron.
+Also now supports the [RedBear Duo](https://github.com/redbear/Duo).
 Implementation based on Adafruit's NeoPixel Library.
 
 Supported Pixel Types
@@ -130,6 +131,15 @@ make clean all PLATFORM=photon APP=neo -s program-dfu
 make clean all PLATFORM=P1 APP=neo -s program-dfu
 make clean all PLATFORM=electron APP=neo -s program-dfu
 make clean all PLATFORM=core APP=neo -s program-dfu
+```
+
+Compile and flash OTA with the CLI locally:
+
+```
+git clone https://github.com/technobly/SparkCore-NeoPixel.git
+cd SparkCore-NeoPixel/firmware
+// make sure to edit the example to use #include "neopixel.h"
+particle flash <device-name> neopixel.cpp neopixel.h examples/rgbw-strandtest.cpp
 ```
 
 Useful Links
