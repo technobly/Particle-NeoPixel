@@ -72,6 +72,9 @@ class Adafruit_NeoPixel {
   Adafruit_NeoPixel(uint16_t n, uint8_t p=2, uint8_t t=WS2812B);
   ~Adafruit_NeoPixel();
 
+  // Remove copy constructor to prevent access to deallocated memory
+  Adafruit_NeoPixel(const Adafruit_NeoPixel&) = delete;
+
   void
     begin(void),
     show(void) __attribute__((optimize("Ofast"))),
