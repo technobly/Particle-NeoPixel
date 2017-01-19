@@ -16,7 +16,7 @@ SYSTEM_MODE(AUTOMATIC);
 #define PIXEL_COUNT 10
 #define PIXEL_TYPE WS2812B
 
-Adafruit_NeoPixel strip = Adafruit_NeoPixel(PIXEL_COUNT, PIXEL_PIN, PIXEL_TYPE);
+Adafruit_NeoPixel strip(PIXEL_COUNT, PIXEL_PIN, PIXEL_TYPE);
 
 // Prototypes for local build, ok to leave in for Build IDE
 void rainbow(uint8_t wait);

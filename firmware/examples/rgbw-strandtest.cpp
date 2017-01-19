@@ -35,7 +35,7 @@ SYSTEM_MODE(AUTOMATIC);
 #define PIXEL_TYPE SK6812RGBW
 #define BRIGHTNESS 50 // 0 - 255
 
-Adafruit_NeoPixel strip = Adafruit_NeoPixel(PIXEL_COUNT, PIXEL_PIN, PIXEL_TYPE);
+Adafruit_NeoPixel strip(PIXEL_COUNT, PIXEL_PIN, PIXEL_TYPE);
 
 int gamma[] = {
     0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
