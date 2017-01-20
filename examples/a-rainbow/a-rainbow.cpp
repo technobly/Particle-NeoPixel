@@ -5,9 +5,8 @@
  *
  */
 
-#include "application.h"
-#include "neopixel/neopixel.h" // use for Build IDE
-// #include "neopixel.h" // use for local build
+#include "Particle.h"
+#include "neopixel.h"
 
 SYSTEM_MODE(AUTOMATIC);
 
@@ -27,6 +26,7 @@ void setup()
   strip.begin();
   strip.show(); // Initialize all pixels to 'off'
 }
+
 void loop()
 {
   rainbow(20);
