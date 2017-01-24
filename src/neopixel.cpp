@@ -74,7 +74,7 @@ Adafruit_NeoPixel::Adafruit_NeoPixel(uint16_t n, uint8_t p, uint8_t t) :
 
 Adafruit_NeoPixel::~Adafruit_NeoPixel() {
   if (pixels) free(pixels);
-  if (pin >= 0) pinMode(pin, INPUT);
+  if (begun) pinMode(pin, INPUT);
 }
 
 void Adafruit_NeoPixel::updateLength(uint16_t n) {
@@ -91,16 +91,14 @@ void Adafruit_NeoPixel::updateLength(uint16_t n) {
 }
 
 void Adafruit_NeoPixel::begin(void) {
-  if (pin >= 0) {
-    pinMode(pin, OUTPUT);
-    digitalWrite(pin, LOW);
-  }
+  pinMode(pin, OUTPUT);
+  digitalWrite(pin, LOW);
   begun = true;
 }
 
 // Set the output pin number
 void Adafruit_NeoPixel::setPin(uint8_t p) {
-    if (begun && (pin >= 0)) {
+    if (begun) {
         pinMode(pin, INPUT);
     }
     pin = p;

@@ -71,11 +71,7 @@ class Adafruit_NeoPixel {
   // Constructor: number of LEDs, pin number, LED type
   Adafruit_NeoPixel(uint16_t n, uint8_t p=2, uint8_t t=WS2812B);
   ~Adafruit_NeoPixel();
-
-  // OLD WAY (won't compile): Adafruit_NeoPixel strip = Adafruit_NeoPixel(PIXEL_COUNT, PIXEL_PIN, PIXEL_TYPE);
-  // NEW WAY (will compile) : Adafruit_NeoPixel strip(PIXEL_COUNT, PIXEL_PIN, PIXEL_TYPE);
-  Adafruit_NeoPixel(const Adafruit_NeoPixel&) = delete; // Use this way now -> Adafruit_NeoPixel strip(PIXEL_COUNT, PIXEL_PIN, PIXEL_TYPE);
-
+  
   void
     begin(void),
     show(void) __attribute__((optimize("Ofast"))),
