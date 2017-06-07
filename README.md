@@ -6,11 +6,11 @@ Also now supports the [RedBear Duo](https://github.com/redbear/Duo).
 Implementation based on Adafruit's NeoPixel Library.
 
 ## Supported Pixel Types
-- 800 KHz and 400kHz bitstream WS2813, WS2812, WS2812B and WS2811
+- 800 KHz WS2812, WS2812B, WS2813 and 400kHz bitstream and WS2811
 - 800 KHz bitstream SK6812RGBW (NeoPixel RGBW pixel strips)
-  - (use 'SK6812RGBW' as `PIXEL_TYPE`)
+    (use 'SK6812RGBW' as PIXEL_TYPE)
 
-The most common kinds are WS2812 (6-pin part), WS2812B (4-pin part) and SK6812RGBW (3 colors + white).
+The most common kinds are WS2812/WS2813 (6-pin part), WS2812B (4-pin part) and SK6812RGBW (3 colors + white).
 
 #### Also supports these less common pixels
 
@@ -64,7 +64,9 @@ _Note: for some stripes like those with the TM1829, you need to count the number
 
 `PIXEL_PIN` is the pin number where your NeoPixel are connected (A0-A7, D0-D7, etc). Most pins are valid. If omitted, D2 is used.
 
-`PIXEL_TYPE` is the type of LED, one of WS2813, WS2812, WS2812B, WS2812B2, WS2811, TM1803, TM1829, SK6812RGBW. If omitted, WS2812B is used.
+`PIXEL_TYPE` is the type of LED, one of WS2811, WS2812, WS2812B, WS2812B2, WS2813, TM1803, TM1829, SK6812RGBW. If omitted, WS2812B is used.
+
+_Note: For legacy 50us reset pulse timing on WS2812/WS2812B or WS2812B2, select WS2812B_FAST or WS2812B2_FAST respectively.  Otherwise, 300us timing will be used._
 
 _Note: RGB order is automatically applied to WS2811, WS2812/WS2812B/WS2812B2/WS2813/TM1803 is GRB order._
 

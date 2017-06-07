@@ -1,9 +1,9 @@
 /*-------------------------------------------------------------------------
   Spark Core, Particle Photon, P1, Electron and RedBear Duo library to control
-  WS2811/WS2812 based RGB LED devices such as Adafruit NeoPixel strips.
+  WS2811/WS2812/WS2813 based RGB LED devices such as Adafruit NeoPixel strips.
 
   Supports:
-  - 800 KHz and 400kHz bitstream WS2812, WS2812B and WS2811
+  - 800 KHz WS2812, WS2812B, WS2813 and 400kHz bitstream and WS2811
   - 800 KHz bitstream SK6812RGBW (NeoPixel RGBW pixel strips)
     (use 'SK6812RGBW' as PIXEL_TYPE)
 
@@ -60,14 +60,19 @@ SYSTEM_MODE(AUTOMATIC);
 //                     of individual LEDs!
 // Parameter 2 = pin number (most are valid)
 //               note: if not specified, D2 is selected for you.
-// Parameter 3 = pixel type [ WS2812, WS2812B, WS2812B2, WS2811,
-//                             TM1803, TM1829, SK6812RGBW ]
-//               note: if not specified, WS2812B is selected for you.
+// Parameter 3 = pixel type [ WS2812, WS2812B, WS2812B2, WS2813, WS2811,
+//                            TM1803, TM1829, SK6812RGBW, WS2812B_FAST,
+//                            WS2812B2_FAST ]
+//               note: if not specified, WS2812B is selected for you which
+//                     is the same as WS2812 or WS2813 in operation.
 //               note: RGB order is automatically applied to WS2811,
-//                     WS2812/WS2812B/WS2812B2/TM1803 is GRB order.
+//                     WS2812/WS2812B/WS2812B2/WS2813/TM1803 is GRB order.
+//               note: For legacy 50us reset pulse timing on WS2812/WS2812B
+//                     or WS2812B2, select WS2812B_FAST or WS2812B2_FAST
+//                     respectively.  Otherwise 300us timing will be used.
 //
 // 800 KHz bitstream 800 KHz bitstream (most NeoPixel products
-//               WS2812 (6-pin part)/WS2812B (4-pin part)/SK6812RGBW (RGB+W) )
+//               WS2812/WS2813 (6-pin part)/WS2812B (4-pin part)/SK6812RGBW (RGB+W) )
 //
 // 400 KHz bitstream (classic 'v1' (not v2) FLORA pixels, WS2811 drivers)
 //                   (Radio Shack Tri-Color LED Strip - TM1803 driver

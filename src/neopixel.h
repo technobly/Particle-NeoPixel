@@ -1,9 +1,9 @@
 /*-------------------------------------------------------------------------
   Spark Core, Particle Photon, P1, Electron and RedBear Duo library to control
-  WS2811/WS2812 based RGB LED devices such as Adafruit NeoPixel strips.
+  WS2811/WS2812/WS2813 based RGB LED devices such as Adafruit NeoPixel strips.
 
   Supports:
-  - 800 KHz and 400kHz bitstream WS2813, WS2812, WS2812B and WS2811
+  - 800 KHz WS2812, WS2812B, WS2813 and 400kHz bitstream and WS2811
   - 800 KHz bitstream SK6812RGBW (NeoPixel RGBW pixel strips)
     (use 'SK6812RGBW' as PIXEL_TYPE)
 
@@ -56,14 +56,16 @@
 #include "Particle.h"
 
 // 'type' flags for LED pixels (third parameter to constructor):
-#define WS2811   0x00 // 400 KHz datastream (NeoPixel)
-#define WS2812   0x02 // 800 KHz datastream (NeoPixel)
-#define WS2812B  0x02 // 800 KHz datastream (NeoPixel)
-#define TM1803   0x03 // 400 KHz datastream (Radio Shack Tri-Color Strip)
-#define TM1829   0x04 // 800 KHz datastream ()
-#define WS2812B2 0x05 // 800 KHz datastream (NeoPixel)
-#define SK6812RGBW 0x06 // 800 KHz datastream (NeoPixel RGBW)
-#define WS2813   0x07 // 800 KHz datastream (NeoPixel)
+#define WS2811         0x00 // 400 KHz datastream (NeoPixel)
+#define WS2812         0x02 // 800 KHz datastream (NeoPixel)
+#define WS2812B        0x02 // 800 KHz datastream (NeoPixel)
+#define WS2813         0x02 // 800 KHz datastream (NeoPixel)
+#define TM1803         0x03 // 400 KHz datastream (Radio Shack Tri-Color Strip)
+#define TM1829         0x04 // 800 KHz datastream ()
+#define WS2812B2       0x05 // 800 KHz datastream (NeoPixel)
+#define SK6812RGBW     0x06 // 800 KHz datastream (NeoPixel RGBW)
+#define WS2812B_FAST   0x07 // 800 KHz datastream (NeoPixel)
+#define WS2812B2_FAST  0x08 // 800 KHz datastream (NeoPixel)
 
 class Adafruit_NeoPixel {
 

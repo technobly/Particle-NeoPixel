@@ -1,9 +1,9 @@
 /*-------------------------------------------------------------------------
   Spark Core, Particle Photon, P1, Electron and RedBear Duo library to control
-  WS2811/WS2812 based RGB LED devices such as Adafruit NeoPixel strips.
+  WS2811/WS2812/WS2813 based RGB LED devices such as Adafruit NeoPixel strips.
 
   Supports:
-  - 800 KHz and 400kHz bitstream WS2813, WS2812, WS2812B and WS2811
+  - 800 KHz WS2812, WS2812B, WS2813 and 400kHz bitstream and WS2811
   - 800 KHz bitstream SK6812RGBW (NeoPixel RGBW pixel strips)
     (use 'SK6812RGBW' as PIXEL_TYPE)
 
@@ -128,12 +128,13 @@ void Adafruit_NeoPixel::show(void) {
     case TM1829: { // TM1829 = 500us reset pulse
         wait_time = 500L;
       } break;
-    case WS2813: { // WS2813 = 300us reset pulse
+    case WS2812B: // WS2812, WS2812B & WS2813 = 300us reset pulse
+    case WS2812B2: {
         wait_time = 300L;
       } break;
-    case WS2812B: // WS2812 & WS2812B = 50us reset pulse
-    case WS2812B2:
-    case WS2811: // WS2811 = 50us reset pulse
+    case WS2811: // WS2811, WS2812B_FAST & WS2812B2_FAST = 50us reset pulse
+    case WS2812B_FAST:
+    case WS2812B2_FAST:
     default: {   // default = 50us reset pulse
         wait_time = 50L;
       } break;
@@ -157,7 +158,7 @@ void Adafruit_NeoPixel::show(void) {
     b,              // Current blue byte value
     w;              // Current white byte value
 
-  if(type == WS2812B || type == WS2813) { // same as WS2812, 800 KHz bitstream
+  if(type == WS2812B || type == WS2812B_FAST) { // Same as WS2812 & WS2813, 800 KHz bitstream
     while(i) { // While bytes left... (3 bytes = 1 pixel)
       mask = 0x800000; // reset the mask
       i = i-3;      // decrement bytes remaining
@@ -359,7 +360,7 @@ void Adafruit_NeoPixel::show(void) {
       } while ( ++j < 32 ); // ... pixel done
     } // end while(i) ... no more pixels
   }
-  else if(type == WS2812B2) { // WS2812B with DWT timer
+  else if(type == WS2812B2 || type == WS2812B2_FAST) { // WS2812B with DWT timer
 #if (PLATFORM_ID == 6) || (PLATFORM_ID == 8) || (PLATFORM_ID == 10) || (PLATFORM_ID == 88) // Photon (6), P1 (8), Electron (10) or Redbear Duo (88)
     #define CYCLES_800_T0H  25 // 312ns (meas. 300ns)
     #define CYCLES_800_T0L  70 // 938ns (meas. 940ns)
@@ -801,26 +802,27 @@ void Adafruit_NeoPixel::setPixelColor(
     }
     uint8_t *p = &pixels[n * 3];
     switch(type) {
-      case WS2812B: // WS2812 & WS2812B is GRB order.
+      case WS2812B: // WS2812, WS2812B & WS2813 is GRB order.
+      case WS2812B_FAST:
       case WS2812B2:
-      case WS2813:  // WS2813 is GRB order.
-        *p++ = g;
-        *p++ = r;
-        *p = b;
-        break;
-      case TM1829: // TM1829 is special RBG order
-        if(r == 255) r = 254; // 255 on RED channel causes display to be in a special mode.
-        *p++ = r;
-        *p++ = b;
-        *p = g;
-        break;
+      case WS2812B2_FAST: {
+          *p++ = g;
+          *p++ = r;
+          *p = b;
+        } break;
+      case TM1829: { // TM1829 is special RBG order
+          if(r == 255) r = 254; // 255 on RED channel causes display to be in a special mode.
+          *p++ = r;
+          *p++ = b;
+          *p = g;
+        } break;
       case WS2811: // WS2811 is RGB order
       case TM1803: // TM1803 is RGB order
-      default:     // default is RGB order
-        *p++ = r;
-        *p++ = g;
-        *p = b;
-        break;
+      default: {   // default is RGB order
+          *p++ = r;
+          *p++ = g;
+          *p = b;
+        } break;
     }
   }
 }
@@ -837,32 +839,33 @@ void Adafruit_NeoPixel::setPixelColor(
     }
     uint8_t *p = &pixels[n * (type==SK6812RGBW?4:3)];
     switch(type) {
-      case WS2812B: // WS2812 & WS2812B is GRB order.
+      case WS2812B: // WS2812, WS2812B & WS2813 is GRB order.
+      case WS2812B_FAST:
       case WS2812B2:
-      case WS2813:  // WS2813 is GRB order.
-        *p++ = g;
-        *p++ = r;
-        *p = b;
-        break;
-      case TM1829: // TM1829 is special RBG order
-        if(r == 255) r = 254; // 255 on RED channel causes display to be in a special mode.
-        *p++ = r;
-        *p++ = b;
-        *p = g;
-        break;
-      case SK6812RGBW: // SK6812RGBW is RGBW order
-        *p++ = r;
-        *p++ = g;
-        *p++ = b;
-        *p = w;
-        break;
+      case WS2812B2_FAST: {
+          *p++ = g;
+          *p++ = r;
+          *p = b;
+        } break;
+      case TM1829: { // TM1829 is special RBG order
+          if(r == 255) r = 254; // 255 on RED channel causes display to be in a special mode.
+          *p++ = r;
+          *p++ = b;
+          *p = g;
+        } break;
+      case SK6812RGBW: { // SK6812RGBW is RGBW order
+          *p++ = r;
+          *p++ = g;
+          *p++ = b;
+          *p = w;
+        } break;
       case WS2811: // WS2811 is RGB order
       case TM1803: // TM1803 is RGB order
-      default:     // default is RGB order
-        *p++ = r;
-        *p++ = g;
-        *p = b;
-        break;
+      default: {   // default is RGB order
+          *p++ = r;
+          *p++ = g;
+          *p = b;
+        } break;
     }
   }
 }
@@ -882,37 +885,34 @@ void Adafruit_NeoPixel::setPixelColor(uint16_t n, uint32_t c) {
     }
     uint8_t *p = &pixels[n * (type==SK6812RGBW?4:3)];
     switch(type) {
-      case WS2812B: // WS2812 & WS2812B is GRB order.
+      case WS2812B: // WS2812, WS2812B & WS2813 is GRB order.
+      case WS2812B_FAST:
       case WS2812B2:
-      case WS2813: { // WS2813 is GRB order.
+      case WS2812B2_FAST: {
           *p++ = g;
           *p++ = r;
           *p = b;
-        }
-        break;
+        } break;
       case TM1829: { // TM1829 is special RBG order
           if(r == 255) r = 254; // 255 on RED channel causes display to be in a special mode.
           *p++ = r;
           *p++ = b;
           *p = g;
-        }
-        break;
+        } break;
       case SK6812RGBW: { // SK6812RGBW is RGBW order
           uint8_t w = (uint8_t)(c >> 24);
           *p++ = r;
           *p++ = g;
           *p++ = b;
           *p = brightness ? ((w * brightness) >> 8) : w;
-        }
-        break;
+        } break;
       case WS2811: // WS2811 is RGB order
       case TM1803: // TM1803 is RGB order
       default: {   // default is RGB order
           *p++ = r;
           *p++ = g;
           *p = b;
-        }
-        break;
+        } break;
     }
   }
 }
@@ -971,26 +971,23 @@ uint32_t Adafruit_NeoPixel::getPixelColor(uint16_t n) const {
   uint32_t c;
 
   switch(type) {
-    case WS2812B: // WS2812 & WS2812B is GRB order.
+    case WS2812B: // WS2812, WS2812B & WS2813 is GRB order.
+    case WS2812B_FAST:
     case WS2812B2:
-    case WS2813: { // WS2813 is GRB order.
+    case WS2812B2_FAST: {
         c = ((uint32_t)p[1] << 16) | ((uint32_t)p[0] <<  8) | (uint32_t)p[2];
-      }
-      break;
+      } break;
     case TM1829: { // TM1829 is special RBG order
         c = ((uint32_t)p[0] << 16) | ((uint32_t)p[2] <<  8) | (uint32_t)p[1];
-      }
-      break;
+      } break;
     case SK6812RGBW: { // SK6812RGBW is RGBW order, but returns packed WRGB color
         c = ((uint32_t)p[0] << 24) | ((uint32_t)p[1] << 16) | ((uint32_t)p[2] <<  8) | (uint32_t)p[3];
-      }
-      break;
+      } break;
     case WS2811: // WS2811 is RGB order
     case TM1803: // TM1803 is RGB order
     default: {   // default is RGB order
         c = ((uint32_t)p[0] << 16) | ((uint32_t)p[1] <<  8) | (uint32_t)p[2];
-      }
-      break;
+      } break;
   }
 
   // Adjust this back up to the true color, as setting a pixel color will
