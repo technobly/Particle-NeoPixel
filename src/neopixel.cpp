@@ -3,7 +3,7 @@
   WS2811/WS2812 based RGB LED devices such as Adafruit NeoPixel strips.
 
   Supports:
-  - 800 KHz and 400kHz bitstream WS2812, WS2812B and WS2811
+  - 800 KHz and 400kHz bitstream WS2813, WS2812, WS2812B and WS2811
   - 800 KHz bitstream SK6812RGBW (NeoPixel RGBW pixel strips)
     (use 'SK6812RGBW' as PIXEL_TYPE)
 
@@ -128,6 +128,9 @@ void Adafruit_NeoPixel::show(void) {
     case TM1829: { // TM1829 = 500us reset pulse
         wait_time = 500L;
       } break;
+    case WS2813: { // WS2813 = 300us reset pulse
+        wait_time = 300L;
+      } break;
     case WS2812B: // WS2812 & WS2812B = 50us reset pulse
     case WS2812B2:
     case WS2811: // WS2811 = 50us reset pulse
@@ -154,7 +157,7 @@ void Adafruit_NeoPixel::show(void) {
     b,              // Current blue byte value
     w;              // Current white byte value
 
-  if(type == WS2812B) { // same as WS2812, 800 KHz bitstream
+  if(type == WS2812B || type == WS2813) { // same as WS2812, 800 KHz bitstream
     while(i) { // While bytes left... (3 bytes = 1 pixel)
       mask = 0x800000; // reset the mask
       i = i-3;      // decrement bytes remaining
@@ -800,6 +803,7 @@ void Adafruit_NeoPixel::setPixelColor(
     switch(type) {
       case WS2812B: // WS2812 & WS2812B is GRB order.
       case WS2812B2:
+      case WS2813:  // WS2813 is GRB order.
         *p++ = g;
         *p++ = r;
         *p = b;
@@ -835,6 +839,7 @@ void Adafruit_NeoPixel::setPixelColor(
     switch(type) {
       case WS2812B: // WS2812 & WS2812B is GRB order.
       case WS2812B2:
+      case WS2813:  // WS2813 is GRB order.
         *p++ = g;
         *p++ = r;
         *p = b;
@@ -878,7 +883,8 @@ void Adafruit_NeoPixel::setPixelColor(uint16_t n, uint32_t c) {
     uint8_t *p = &pixels[n * (type==SK6812RGBW?4:3)];
     switch(type) {
       case WS2812B: // WS2812 & WS2812B is GRB order.
-      case WS2812B2: {
+      case WS2812B2:
+      case WS2813: { // WS2813 is GRB order.
           *p++ = g;
           *p++ = r;
           *p = b;
@@ -966,7 +972,8 @@ uint32_t Adafruit_NeoPixel::getPixelColor(uint16_t n) const {
 
   switch(type) {
     case WS2812B: // WS2812 & WS2812B is GRB order.
-    case WS2812B2: {
+    case WS2812B2:
+    case WS2813: { // WS2813 is GRB order.
         c = ((uint32_t)p[1] << 16) | ((uint32_t)p[0] <<  8) | (uint32_t)p[2];
       }
       break;

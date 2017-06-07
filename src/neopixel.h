@@ -3,7 +3,7 @@
   WS2811/WS2812 based RGB LED devices such as Adafruit NeoPixel strips.
 
   Supports:
-  - 800 KHz and 400kHz bitstream WS2812, WS2812B and WS2811
+  - 800 KHz and 400kHz bitstream WS2813, WS2812, WS2812B and WS2811
   - 800 KHz bitstream SK6812RGBW (NeoPixel RGBW pixel strips)
     (use 'SK6812RGBW' as PIXEL_TYPE)
 
@@ -63,6 +63,7 @@
 #define TM1829   0x04 // 800 KHz datastream ()
 #define WS2812B2 0x05 // 800 KHz datastream (NeoPixel)
 #define SK6812RGBW 0x06 // 800 KHz datastream (NeoPixel RGBW)
+#define WS2813   0x07 // 800 KHz datastream (NeoPixel)
 
 class Adafruit_NeoPixel {
 
@@ -71,7 +72,7 @@ class Adafruit_NeoPixel {
   // Constructor: number of LEDs, pin number, LED type
   Adafruit_NeoPixel(uint16_t n, uint8_t p=2, uint8_t t=WS2812B);
   ~Adafruit_NeoPixel();
-  
+
   void
     begin(void),
     show(void) __attribute__((optimize("Ofast"))),
