@@ -1,6 +1,7 @@
 /*-------------------------------------------------------------------------
-  Spark Core, Particle Photon, P1, Electron and RedBear Duo library to control
-  WS2811/WS2812/WS2813 based RGB LED devices such as Adafruit NeoPixel strips.
+  Spark Core, Particle Photon, P1, Electron, Argon, Boron, Xenon and
+  RedBear Duo library to control WS2811/WS2812/WS2813 based RGB LED
+  devices such as Adafruit NeoPixel strips.
 
   Supports:
   - 800 KHz WS2812, WS2812B, WS2813 and 400kHz bitstream and WS2811
@@ -12,9 +13,9 @@
   - TM1829 pixels
 
   PLEASE NOTE that the NeoPixels require 5V level inputs
-  and the Spark Core, Particle Photon, P1, Electron and RedBear Duo only
-  have 3.3V level outputs. Level shifting is necessary, but will require
-  a fast device such as one of the following:
+  and the supported microcontrollers only have 3.3V level outputs. Level
+  shifting is necessary, but will require a fast device such as one of
+  the following:
 
   [SN74HCT125N]
   http://www.digikey.com/product-detail/en/SN74HCT125N/296-8386-5-ND/376860
@@ -50,6 +51,12 @@
   <http://www.gnu.org/licenses/>.
   -------------------------------------------------------------------------*/
 
+// FIXME: remove before release
+#ifndef PLATFORM_ID
+#define PLATFORM_ID 14
+#define USE_NRF_PWM
+#endif
+
 #include "neopixel.h"
 
 #if PLATFORM_ID == 0 // Core (0)
@@ -59,31 +66,63 @@
   STM32_Pin_Info* PIN_MAP2 = HAL_Pin_Map(); // Pointer required for highest access speed
   #define pinLO(_pin) (PIN_MAP2[_pin].gpio_peripheral->BSRRH = PIN_MAP2[_pin].gpio_pin)
   #define pinHI(_pin) (PIN_MAP2[_pin].gpio_peripheral->BSRRL = PIN_MAP2[_pin].gpio_pin)
+#elif (PLATFORM_ID == 12) || (PLATFORM_ID == 13) || (PLATFORM_ID == 14) // Argon (12), Boron (13), Xenon (14)
+  // No pinLO and pinHI needed since these platforms use hardware PWM for generating the Neopixel waveform
+  #define pinLOW(_pin)
+  #define pinHI(_pin)
 #else
-  #error "*** PLATFORM_ID not supported by this library. PLATFORM should be Core, Photon, P1, Electron or RedBear Duo ***"
+  #error "*** PLATFORM_ID not supported by this library. PLATFORM should be Core, Photon, P1, Electron, Argon, Boron or Xenon or RedBear Duo ***"
 #endif
 // fast pin access
 #define pinSet(_pin, _hilo) (_hilo ? pinHI(_pin) : pinLO(_pin))
 
 Adafruit_NeoPixel::Adafruit_NeoPixel(uint16_t n, uint8_t p, uint8_t t) :
-  begun(false), type(t), brightness(0), pixels(NULL), endTime(0)
+  begun(false), active(false), type(t), brightness(0), pixels(NULL), endTime(0)
+#ifdef USE_NRF_PWM
+  , bits(NULL)
+#endif
 {
   updateLength(n);
   setPin(p);
 }
 
 Adafruit_NeoPixel::~Adafruit_NeoPixel() {
-  if (pixels) free(pixels);
-  if (begun) pinMode(pin, INPUT);
+  updateLength(0);
+  if (begun) end();
 }
 
 void Adafruit_NeoPixel::updateLength(uint16_t n) {
-  if (pixels) free(pixels); // Free existing data (if any)
+  waitForInactive();
+  if (pixels) {
+    free(pixels); // Free existing data (if any)
+    pixels = NULL;
+  }
+#ifdef USE_NRF_PWM
+  if (bits) {
+    free(bits);
+    bits = NULL;
+  }
+#endif
+
+  if (n == 0) {
+    return;
+  }
 
   // Allocate new data -- note: ALL PIXELS ARE CLEARED
-  numBytes = n * ((type == SK6812RGBW) ? 4 : 3);
-  if ((pixels = (uint8_t *)malloc(numBytes))) {
+  numBytes = n * bytesPerPixel();
+  pixels = (uint8_t*)malloc(numBytes);
+#ifdef USE_NRF_PWM
+  bits = (uint16_t*)malloc(numBytes * 8);
+#endif
+  if (pixels
+#ifdef USE_NRF_PWM
+  && bits
+#endif
+   ) {
     memset(pixels, 0, numBytes);
+#ifdef USE_NRF_PWM
+    memset(bits, 0, numBytes * 8);
+#endif
     numLEDs = n;
   } else {
     numLEDs = numBytes = 0;
@@ -91,24 +130,39 @@ void Adafruit_NeoPixel::updateLength(uint16_t n) {
 }
 
 void Adafruit_NeoPixel::begin(void) {
+  #ifdef USE_NRF_PWM
+  beginPwm();
+  #else
   pinMode(pin, OUTPUT);
   digitalWrite(pin, LOW);
+  #endif
   begun = true;
+}
+
+void Adafruit_NeoPixel::end(void) {
+  waitForInactive();
+  #ifdef USE_NRF_PWM
+  endPwm();
+  #else
+  pinMode(pin, INPUT);
+  #endif
+  begun = false;
 }
 
 // Set the output pin number
 void Adafruit_NeoPixel::setPin(uint8_t p) {
-    if (begun) {
-        pinMode(pin, INPUT);
-    }
-    pin = p;
-    if (begun) {
-        pinMode(p, OUTPUT);
-        digitalWrite(p, LOW);
-    }
+  bool wasBegun = begun;
+  if (wasBegun) {
+      end();
+  }
+  pin = p;
+  if (wasBegun) {
+      begin();
+  }
 }
 
 void Adafruit_NeoPixel::show(void) {
+  waitForInactive();
   if(!pixels) return;
 
   // Data latch = 24 or 50 microsecond pause in the output stream.  Rather than
@@ -144,7 +198,13 @@ void Adafruit_NeoPixel::show(void) {
   // instances on different pins can be quickly issued in succession (each
   // instance doesn't delay the next).
 
+  #ifdef USE_NRF_PWM
+
+  showPwm();
+
+  #else
   __disable_irq(); // Need 100% focus on instruction timing
+  active = true;
 
   volatile uint32_t
     c,    // 24-bit/32-bit pixel color
@@ -787,8 +847,11 @@ void Adafruit_NeoPixel::show(void) {
     } // end while(i) ... no more pixels
   }
 
+  active = false;
   __enable_irq();
   endTime = micros(); // Save EOD time for latch on next call
+
+  #endif // USE_NRF_PWM
 }
 
 // Set pixel color from separate R,G,B components:
@@ -837,7 +900,7 @@ void Adafruit_NeoPixel::setPixelColor(
       b = (b * brightness) >> 8;
       w = (w * brightness) >> 8;
     }
-    uint8_t *p = &pixels[n * (type==SK6812RGBW?4:3)];
+    uint8_t *p = &pixels[n * bytesPerPixel()];
     switch(type) {
       case WS2812B: // WS2812, WS2812B & WS2813 is GRB order.
       case WS2812B_FAST:
@@ -883,7 +946,7 @@ void Adafruit_NeoPixel::setPixelColor(uint16_t n, uint32_t c) {
       g = (g * brightness) >> 8;
       b = (b * brightness) >> 8;
     }
-    uint8_t *p = &pixels[n * (type==SK6812RGBW?4:3)];
+    uint8_t *p = &pixels[n * bytesPerPixel()];
     switch(type) {
       case WS2812B: // WS2812, WS2812B & WS2813 is GRB order.
       case WS2812B_FAST:
@@ -967,7 +1030,7 @@ uint32_t Adafruit_NeoPixel::getPixelColor(uint16_t n) const {
     return 0;
   }
 
-  uint8_t *p = &pixels[n * (type==SK6812RGBW?4:3)];
+  uint8_t *p = &pixels[n * bytesPerPixel()];
   uint32_t c;
 
   switch(type) {
@@ -995,7 +1058,7 @@ uint32_t Adafruit_NeoPixel::getPixelColor(uint16_t n) const {
   if(brightness) { // See notes in setBrightness()
     //Cast the color to a byte array
     uint8_t * c_ptr =reinterpret_cast<uint8_t*>(&c);
-    if (type == SK6812RGBW) {
+    if (bytesPerPixel() == 4) {
       c_ptr[3] = (c_ptr[3] << 8)/brightness;
     }
     c_ptr[0] = (c_ptr[0] << 8)/brightness;
@@ -1062,3 +1125,132 @@ uint8_t Adafruit_NeoPixel::getBrightness(void) const {
 void Adafruit_NeoPixel::clear(void) {
   memset(pixels, 0, numBytes);
 }
+
+void Adafruit_NeoPixel::waitForInactive(void) {
+    while (active) delay(1);
+}
+
+#ifdef USE_NRF_PWM
+/* Implementation of the Neopixel waveform generation for the nRF52840 using the PWM peripheral and DMA
+ */
+
+Adafruit_NeoPixel* Adafruit_NeoPixel::instance = NULL;
+
+#include "nrf_gpio.h"
+#include "pinmap_impl.h"
+
+#define NRFX_PWM_DUTY_INVERTED 0x8000
+
+// 800 kHz with 16 MHz clock
+#define PERIOD_800KHZ 20
+// 400 kHz with 16 MHz clock
+#define PERIOD_400KHZ 40
+
+#define BIT0_800KHZ (NRFX_PWM_DUTY_INVERTED | 5)
+#define BIT1_800KHZ (NRFX_PWM_DUTY_INVERTED | 14)
+
+#define BIT0_400KHZ (NRFX_PWM_DUTY_INVERTED | 10)
+#define BIT1_400KHZ (NRFX_PWM_DUTY_INVERTED | 28)
+
+uint8_t nrf_pins[NRF_PWM_CHANNEL_COUNT] = {
+  NRFX_PWM_PIN_NOT_USED,
+  NRFX_PWM_PIN_NOT_USED,
+  NRFX_PWM_PIN_NOT_USED,
+  NRFX_PWM_PIN_NOT_USED,
+};
+
+const nrfx_pwm_t pwms[] = {
+    NRFX_PWM_INSTANCE(0),
+    NRFX_PWM_INSTANCE(1),
+    NRFX_PWM_INSTANCE(2),
+    NRFX_PWM_INSTANCE(3)
+};
+
+void Adafruit_NeoPixel::beginPwm(void) {
+    NRF5x_Pin_Info*  PIN_MAP = HAL_Pin_Map();
+    uint8_t          pwm_num = PIN_MAP[pin].pwm_instance;
+    uint8_t          pwm_channel = PIN_MAP[pin].pwm_channel;
+
+    nrf_pwm_clk_t pwm_clock = NRF_PWM_CLK_16MHz;
+    uint16_t period_hwu = (freqkHz() == 800) ? PERIOD_800KHZ : PERIOD_400KHZ;
+    nrf_pins[pwm_channel] = NRF_GPIO_PIN_MAP(PIN_MAP[pin].gpio_port, PIN_MAP[pin].gpio_pin);
+
+    nrfx_pwm_config_t const config = {
+        .output_pins =
+        {
+            nrf_pins[0],   // channel 0
+            nrf_pins[1],   // channel 1
+            nrf_pins[2],   // channel 2
+            nrf_pins[3],   // channel 3
+        },
+        .irq_priority = APP_IRQ_PRIORITY_LOWEST,
+        .base_clock   = pwm_clock,
+        .count_mode   = NRF_PWM_MODE_UP,
+        .top_value    = period_hwu,
+        .load_mode    = NRF_PWM_LOAD_COMMON,
+        .step_mode    = NRF_PWM_STEP_AUTO
+    };
+
+    nrfx_pwm_init(&pwms[pwm_num], &config, stopHandler);
+    HAL_Set_Pin_Function(pin, PF_PWM);
+}
+
+void Adafruit_NeoPixel::stopPwm() {
+  active = false;
+  endTime = micros();
+}
+
+void Adafruit_NeoPixel::stopHandler(nrfx_pwm_evt_type_t eventType) {
+  if (eventType == NRFX_PWM_EVT_STOPPED) {
+    if (Adafruit_NeoPixel::instance) {
+      Adafruit_NeoPixel::instance->stopPwm();
+    }
+  }
+}
+
+void Adafruit_NeoPixel::showPwm(void) {
+  pixelsToBits();
+
+  active = true;
+  instance = this;
+
+  NRF5x_Pin_Info*  PIN_MAP = HAL_Pin_Map();
+  uint8_t          pwm_num = PIN_MAP[pin].pwm_instance;
+
+  nrf_pwm_sequence_t const seq = {
+    .values     = { .p_common = bits },
+    .length     = 8 * numBytes,
+    .repeats    = 0,
+    .end_delay  = 0
+  };
+
+  nrfx_pwm_simple_playback(&pwms[pwm_num], &seq, 1, NRFX_PWM_FLAG_STOP);
+}
+
+void Adafruit_NeoPixel::pixelsToBits() {
+  uint16_t bit0 = (freqkHz() == 800) ? BIT0_800KHZ : BIT0_400KHZ;
+  uint16_t bit1 = (freqkHz() == 800) ? BIT1_800KHZ : BIT1_400KHZ;
+  uint16_t* bitPtr = &bits[0];
+  uint8_t* pixelPtr = &pixels[0];
+
+  for (uint16_t i = 0; i < numBytes; i++) {
+    uint8_t mask = 0x80;
+
+    while (mask) {
+      if (*pixelPtr & mask) {
+        *bitPtr = bit1;
+      } else {
+        *bitPtr = bit0;
+      }
+      mask >>= 1;
+      bitPtr++;
+    }
+    pixelPtr++;
+  }
+}
+
+void Adafruit_NeoPixel::endPwm() {
+  // TODO
+}
+
+#endif // USE_NRF_PWM

@@ -53,7 +53,21 @@
 #ifndef SPARK_NEOPIXEL_H
 #define SPARK_NEOPIXEL_H
 
+// FIXME: remove before release
+#ifndef PLATFORM_ID
+#define PLATFORM_ID 14
+#endif
+
+#if (PLATFORM_ID == 12) || (PLATFORM_ID == 13) || (PLATFORM_ID == 14) // Argon (12), Boron (13), Xenon (14)
+  // These platforms use hardware PWM for generating the Neopixel waveform
+  #define USE_NRF_PWM
+#endif
+
 #include "Particle.h"
+
+#ifdef USE_NRF_PWM
+#include "nrfx_pwm.h"
+#endif
 
 // 'type' flags for LED pixels (third parameter to constructor):
 #define WS2811         0x00 // 400 KHz datastream (NeoPixel)
@@ -77,6 +91,7 @@ class Adafruit_NeoPixel {
 
   void
     begin(void),
+    end(void),
     show(void) __attribute__((optimize("Ofast"))),
     setPin(uint8_t p),
     setPixelColor(uint16_t n, uint8_t r, uint8_t g, uint8_t b),
@@ -105,10 +120,32 @@ class Adafruit_NeoPixel {
   byte
     brightnessToPWM(byte aBrightness);
 
+  byte bytesPerPixel() const {
+    return (type == SK6812RGBW) ? 4 : 3;
+  }
+
+  uint16_t freqkHz() const {
+    return (type == WS2811 || type == TM1803) ? 400 : 800;
+  }
+
  private:
+  void waitForInactive();
+
+#ifdef USE_NRF_PWM
+  void beginPwm();
+  void endPwm();
+  void showPwm();
+  void stopPwm();
+  void pixelsToBits();
+
+  // FIXME: currently nrfx doesn't allow passing state to handler so we need a static function and global instance
+  static void stopHandler(nrfx_pwm_evt_type_t eventType);
+  static Adafruit_NeoPixel* instance;
+#endif
 
   bool
-    begun;         // true if begin() previously called
+    begun,         // true if begin() previously called
+    active;        // true if currently outputting a waveform
   uint16_t
     numLEDs,       // Number of RGB LEDs in strip
     numBytes;      // Size of 'pixels' buffer below
@@ -120,6 +157,9 @@ class Adafruit_NeoPixel {
    *pixels;        // Holds LED color values (3 bytes each)
   uint32_t
     endTime;       // Latch timing reference
+#ifdef USE_NRF_PWM
+  uint16_t* bits;  // Holds the PWM duty cycle for each bit
+#endif
 };
 
 #endif // ADAFRUIT_NEOPIXEL_H
