@@ -50,8 +50,8 @@
   <http://www.gnu.org/licenses/>.
   --------------------------------------------------------------------*/
 
-#ifndef SPARK_NEOPIXEL_H
-#define SPARK_NEOPIXEL_H
+#ifndef PARTICLE_NEOPIXEL_H
+#define PARTICLE_NEOPIXEL_H
 
 // FIXME: remove before release
 #ifndef PLATFORM_ID
@@ -86,39 +86,33 @@ class Adafruit_NeoPixel {
  public:
 
   // Constructor: number of LEDs, pin number, LED type
-  Adafruit_NeoPixel(uint16_t n, uint8_t p=2, uint8_t t=WS2812B);
+  Adafruit_NeoPixel(uint16_t n, uint8_t p, uint8_t t = WS2812B);
   ~Adafruit_NeoPixel();
 
-  void
-    begin(void),
-    end(void),
-    show(void) __attribute__((optimize("Ofast"))),
-    setPin(uint8_t p),
-    setPixelColor(uint16_t n, uint8_t r, uint8_t g, uint8_t b),
-    setPixelColor(uint16_t n, uint8_t r, uint8_t g, uint8_t b, uint8_t w),
-    setPixelColor(uint16_t n, uint32_t c),
-    setBrightness(uint8_t),
-    setColor(uint16_t aLedNumber, byte aRed, byte aGreen, byte aBlue),
-    setColor(uint16_t aLedNumber, byte aRed, byte aGreen, byte aBlue, byte aWhite),
-    setColorScaled(uint16_t aLedNumber, byte aRed, byte aGreen, byte aBlue, byte aScaling),
-    setColorScaled(uint16_t aLedNumber, byte aRed, byte aGreen, byte aBlue, byte aWhite, byte aScaling),
-    setColorDimmed(uint16_t aLedNumber, byte aRed, byte aGreen, byte aBlue, byte aBrightness),
-    setColorDimmed(uint16_t aLedNumber, byte aRed, byte aGreen, byte aBlue, byte aWhite, byte aBrightness),
-    updateLength(uint16_t n),
-    clear(void);
-  uint8_t
-   *getPixels() const,
-    getBrightness(void) const;
-  uint16_t
-    numPixels(void) const,
-    getNumLeds(void) const;
-  static uint32_t
-    Color(uint8_t r, uint8_t g, uint8_t b),
-    Color(uint8_t r, uint8_t g, uint8_t b, uint8_t w);
-  uint32_t
-    getPixelColor(uint16_t n) const;
-  byte
-    brightnessToPWM(byte aBrightness);
+  void begin();
+  void end();
+  void show() __attribute__((optimize("Ofast")));
+  void setPin(uint8_t p);
+  void setPixelColor(uint16_t n, uint8_t r, uint8_t g, uint8_t b);
+  void setPixelColor(uint16_t n, uint8_t r, uint8_t g, uint8_t b, uint8_t w);
+  void setPixelColor(uint16_t n, uint32_t c);
+  void setBrightness(uint8_t);
+  void setColor(uint16_t aLedNumber, byte aRed, byte aGreen, byte aBlue);
+  void setColor(uint16_t aLedNumber, byte aRed, byte aGreen, byte aBlue, byte aWhite);
+  void setColorScaled(uint16_t aLedNumber, byte aRed, byte aGreen, byte aBlue, byte aScaling);
+  void setColorScaled(uint16_t aLedNumber, byte aRed, byte aGreen, byte aBlue, byte aWhite, byte aScaling);
+  void setColorDimmed(uint16_t aLedNumber, byte aRed, byte aGreen, byte aBlue, byte aBrightness);
+  void setColorDimmed(uint16_t aLedNumber, byte aRed, byte aGreen, byte aBlue, byte aWhite, byte aBrightness);
+  void updateLength(uint16_t n);
+  void clear();
+  uint8_t* getPixels() const;
+  uint8_t getBrightness() const;
+  uint16_t numPixels() const;
+  uint16_t getNumLeds() const;
+  static uint32_t Color(uint8_t r, uint8_t g, uint8_t b);
+  static uint32_t Color(uint8_t r, uint8_t g, uint8_t b, uint8_t w);
+  uint32_t getPixelColor(uint16_t n) const;
+  byte brightnessToPWM(byte aBrightness);
 
   byte bytesPerPixel() const {
     return (type == SK6812RGBW) ? 4 : 3;
@@ -143,23 +137,19 @@ class Adafruit_NeoPixel {
   static Adafruit_NeoPixel* instance;
 #endif
 
-  bool
-    begun,         // true if begin() previously called
-    active;        // true if currently outputting a waveform
-  uint16_t
-    numLEDs,       // Number of RGB LEDs in strip
-    numBytes;      // Size of 'pixels' buffer below
-  const uint8_t
-    type;          // Pixel type flag (400 vs 800 KHz)
-  uint8_t
-    pin,           // Output pin number
-    brightness,
-   *pixels;        // Holds LED color values (3 bytes each)
-  uint32_t
-    endTime;       // Latch timing reference
+  bool begun;         // true if begin() previously called
+  bool active;        // true if currently outputting a waveform
+  
+  uint16_t numLEDs;       // Number of RGB LEDs in strip
+  uint16_t numBytes;      // Size of 'pixels' buffer below
+  const uint8_t type;          // Pixel type flag (400 vs 800 KHz)
+  uint8_t pin;           // Output pin number
+  uint8_t brightness;
+  uint8_t* pixels;        // Holds LED color values (3 bytes each)
+  uint32_t endTime;       // Latch timing reference
 #ifdef USE_NRF_PWM
   uint16_t* bits;  // Holds the PWM duty cycle for each bit
 #endif
 };
 
-#endif // ADAFRUIT_NEOPIXEL_H
+#endif // PARTICLE_NEOPIXEL_H

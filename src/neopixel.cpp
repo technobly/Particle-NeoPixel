@@ -1218,7 +1218,7 @@ void Adafruit_NeoPixel::showPwm(void) {
 
   nrf_pwm_sequence_t const seq = {
     .values     = { .p_common = bits },
-    .length     = 8 * numBytes,
+    .length     = (uint16_t)(8 * numBytes),
     .repeats    = 0,
     .end_delay  = 0
   };
