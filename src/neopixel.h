@@ -50,23 +50,30 @@
   <http://www.gnu.org/licenses/>.
   --------------------------------------------------------------------*/
 
-#ifndef PARTICLE_NEOPIXEL_H
-#define PARTICLE_NEOPIXEL_H
+#pragma once
 
 // FIXME: remove before release
 #ifndef PLATFORM_ID
 #define PLATFORM_ID 14
 #endif
 
-#if (PLATFORM_ID == 12) || (PLATFORM_ID == 13) || (PLATFORM_ID == 14) // Argon (12), Boron (13), Xenon (14)
+#if (PLATFORM_ID == 0) || (PLATFORM_ID == 6) || (PLATFORM_ID == 8) || (PLATFORM_ID == 10) || (PLATFORM_ID == 88)
+  #define USE_DRIVER_BLOCKING
+#elif (PLATFORM_ID == 12) || (PLATFORM_ID == 13) || (PLATFORM_ID == 14) // Argon (12), Boron (13), Xenon (14)
   // These platforms use hardware PWM for generating the Neopixel waveform
-  #define USE_NRF_PWM
+  #define USE_DRIVER_NRFPWM
+#else
+  #error "*** PLATFORM_ID not supported by this library. PLATFORM should be Core, Photon, P1, Electron, Argon, Boron or Xenon or RedBear Duo ***"
 #endif
 
 #include "Particle.h"
 
-#ifdef USE_NRF_PWM
-#include "nrfx_pwm.h"
+#ifdef USE_DRIVER_BLOCKING
+#include "neopixel-driver-blocking.h"
+#endif
+
+#ifdef USE_DRIVER_NRFPWM
+#include "neopixel-driver-nrfpwm.h"
 #endif
 
 // 'type' flags for LED pixels (third parameter to constructor):
@@ -91,7 +98,7 @@ class Adafruit_NeoPixel {
 
   void begin();
   void end();
-  void show() __attribute__((optimize("Ofast")));
+  void show();
   void setPin(uint8_t p);
   void setPixelColor(uint16_t n, uint8_t r, uint8_t g, uint8_t b);
   void setPixelColor(uint16_t n, uint8_t r, uint8_t g, uint8_t b, uint8_t w);
@@ -123,33 +130,13 @@ class Adafruit_NeoPixel {
   }
 
  private:
-  void waitForInactive();
-
-#ifdef USE_NRF_PWM
-  void beginPwm();
-  void endPwm();
-  void showPwm();
-  void stopPwm();
-  void pixelsToBits();
-
-  // FIXME: currently nrfx doesn't allow passing state to handler so we need a static function and global instance
-  static void stopHandler(nrfx_pwm_evt_type_t eventType);
-  static Adafruit_NeoPixel* instance;
-#endif
-
   bool begun;         // true if begin() previously called
-  bool active;        // true if currently outputting a waveform
   
   uint16_t numLEDs;       // Number of RGB LEDs in strip
   uint16_t numBytes;      // Size of 'pixels' buffer below
   const uint8_t type;          // Pixel type flag (400 vs 800 KHz)
-  uint8_t pin;           // Output pin number
   uint8_t brightness;
   uint8_t* pixels;        // Holds LED color values (3 bytes each)
-  uint32_t endTime;       // Latch timing reference
-#ifdef USE_NRF_PWM
-  uint16_t* bits;  // Holds the PWM duty cycle for each bit
-#endif
-};
 
-#endif // PARTICLE_NEOPIXEL_H
+  DECLARE_DRIVER;
+};
