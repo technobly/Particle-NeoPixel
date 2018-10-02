@@ -6,20 +6,20 @@
 
 #include "nrfx_pwm.h"
 
-#define DECLARE_DRIVER NeoPixel_Driver_NrfPwm driver
+#define DECLARE_DRIVER NeoPixel_NrfPwm driver
 
-class NeoPixel_Driver_NrfPwm {
+class NeoPixel_NrfPwm {
 
  public:
 
-  NeoPixel_Driver_NrfPwm(uint8_t p, uint8_t t);
-  ~NeoPixel_Driver_NrfPwm();
+  NeoPixel_NrfPwm(uint8_t p, uint8_t t);
+  ~NeoPixel_NrfPwm();
 
   void begin();
   void end();
   void setPin(uint8_t p);
   void updateLength(uint16_t numBytes);
-  void show(uint8_t* pixels, uint16_t numBytes);
+  void show(uint8_t* pixels, uint16_t numBytes, uint32_t waitTime);
 
  private:
   void waveformDone();
@@ -29,7 +29,7 @@ class NeoPixel_Driver_NrfPwm {
 
   // FIXME: currently nrfx doesn't allow passing state to handler so we need a static function and global instance
   static void stopHandler(nrfx_pwm_evt_type_t eventType);
-  static NeoPixel_Driver_NrfPwm* instance;
+  static NeoPixel_NrfPwm* instance;
 
   const uint8_t type;
   uint8_t pin;

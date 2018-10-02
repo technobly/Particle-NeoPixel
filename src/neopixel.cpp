@@ -117,7 +117,35 @@ void Adafruit_NeoPixel::setPin(uint8_t p) {
 }
 
 void Adafruit_NeoPixel::show() {
-  driver.show(pixels, numBytes);
+  // Data latch = 24 or 50 microsecond pause in the output stream.  Rather than
+  // put a delay at the end of the function, the ending time is noted and
+  // the function will simply hold off (if needed) on issuing the
+  // subsequent round of data until the latch time has elapsed.  This
+  // allows the mainline code to start generating the next frame of data
+  // rather than stalling for the latch.
+  uint32_t waitTime; // wait time in microseconds.
+  switch(type) {
+    case TM1803: { // TM1803 = 24us reset pulse
+        waitTime = 24L;
+      } break;
+    case SK6812RGBW: { // SK6812RGBW = 80us reset pulse
+        waitTime = 80L;
+      } break;
+    case TM1829: { // TM1829 = 500us reset pulse
+        waitTime = 500L;
+      } break;
+    case WS2812B: // WS2812, WS2812B & WS2813 = 300us reset pulse
+    case WS2812B2: {
+        waitTime = 300L;
+      } break;
+    case WS2811: // WS2811, WS2812B_FAST & WS2812B2_FAST = 50us reset pulse
+    case WS2812B_FAST:
+    case WS2812B2_FAST:
+    default: {   // default = 50us reset pulse
+        waitTime = 50L;
+      } break;
+  }
+  driver.show(pixels, numBytes, waitTime);
 }
 
 // Set pixel color from separate R,G,B components:

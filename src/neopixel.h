@@ -1,6 +1,7 @@
 /*-------------------------------------------------------------------------
-  Spark Core, Particle Photon, P1, Electron and RedBear Duo library to control
-  WS2811/WS2812/WS2813 based RGB LED devices such as Adafruit NeoPixel strips.
+  Particle Argon, Boron, Xenon, Photon, P1, Electron, Core and RedBear Duo
+  library to control WS2811/WS2812/WS2813 based RGB LED devices such as
+  Adafruit NeoPixel strips.
 
   Supports:
   - 800 KHz WS2812, WS2812B, WS2813 and 400kHz bitstream and WS2811
@@ -12,9 +13,9 @@
   - TM1829 pixels
 
   PLEASE NOTE that the NeoPixels require 5V level inputs
-  and the Spark Core, Particle Photon, P1, Electron and RedBear Duo only
-  have 3.3V level outputs. Level shifting is necessary, but will require
-  a fast device such as one of the following:
+  and these microcontrollers only have 3.3V level outputs. Level
+  shifting is necessary, but will require a fast device such as one of
+  the following:
 
   [SN74HCT125N]
   http://www.digikey.com/product-detail/en/SN74HCT125N/296-8386-5-ND/376860
@@ -23,7 +24,7 @@
   http://www.digikey.com/product-detail/en/SN74HCT245N/296-1612-5-ND/277258
 
   Written by Phil Burgess / Paint Your Dragon for Adafruit Industries.
-  Modified to work with Particle devices by Technobly.
+  Modified to work with Particle devices by Technobly and Julien Vanier.
   Contributions by PJRC and other members of the open source community.
 
   Adafruit invests time and resources providing this open source code,
@@ -57,23 +58,32 @@
 #define PLATFORM_ID 14
 #endif
 
+/* Pick which low-lever driver to use
+ *
+ * The bit bang driver is straigthforward but it relies on precise timing between CPU instructions and it has to disable
+ * interrupts while generating the Neopixel waveform.
+ *
+ * On the Nordic nRF5 platform, it's possible to offload the task of generating the Neopixel to the PWM peripheral,
+ * leaving the CPU free to do other things while the Neopixel waveform is output.
+ */
 #if (PLATFORM_ID == 0) || (PLATFORM_ID == 6) || (PLATFORM_ID == 8) || (PLATFORM_ID == 10) || (PLATFORM_ID == 88)
-  #define USE_DRIVER_BLOCKING
-#elif (PLATFORM_ID == 12) || (PLATFORM_ID == 13) || (PLATFORM_ID == 14) // Argon (12), Boron (13), Xenon (14)
-  // These platforms use hardware PWM for generating the Neopixel waveform
+  // On the Core (0), Photon (6), P1 (8), Electron (10) and Duo (88), use the bit-bang driver
+  #define USE_DRIVER_BITBANG
+#elif (PLATFORM_ID == 12) || (PLATFORM_ID == 13) || (PLATFORM_ID == 14)
+  // On the Argon (12), Boron (13), Xenon (14), use the hardware PRM driver
   #define USE_DRIVER_NRFPWM
 #else
-  #error "*** PLATFORM_ID not supported by this library. PLATFORM should be Core, Photon, P1, Electron, Argon, Boron or Xenon or RedBear Duo ***"
+  #error "*** PLATFORM_ID not supported by this library. PLATFORM should be Argon, Boron or Xenon, Photon, P1, Electron, Core or RedBear Duo ***"
 #endif
 
 #include "Particle.h"
 
-#ifdef USE_DRIVER_BLOCKING
-#include "neopixel-driver-blocking.h"
+#ifdef USE_DRIVER_BITBANG
+#include "neopixel-bitbang.h"
 #endif
 
 #ifdef USE_DRIVER_NRFPWM
-#include "neopixel-driver-nrfpwm.h"
+#include "neopixel-nrfpwm.h"
 #endif
 
 // 'type' flags for LED pixels (third parameter to constructor):
@@ -125,10 +135,6 @@ class Adafruit_NeoPixel {
     return (type == SK6812RGBW) ? 4 : 3;
   }
 
-  uint16_t freqkHz() const {
-    return (type == WS2811 || type == TM1803) ? 400 : 800;
-  }
-
  private:
   bool begun;         // true if begin() previously called
   
@@ -138,5 +144,6 @@ class Adafruit_NeoPixel {
   uint8_t brightness;
   uint8_t* pixels;        // Holds LED color values (3 bytes each)
 
+  // Create an instance of the appropriate driver
   DECLARE_DRIVER;
 };

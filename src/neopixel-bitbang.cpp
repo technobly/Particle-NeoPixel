@@ -1,9 +1,8 @@
 #include "neopixel.h"
 
-#ifdef USE_DRIVER_BLOCKING
+#ifdef USE_DRIVER_BITBANG
 
-#include "neopixel-driver-blocking.h"
-
+// Access the pin hardware register directly for the fastest possible access
 #if PLATFORM_ID == 0 // Core (0)
   #define pinLO(_pin) (PIN_MAP[_pin].gpio_peripheral->BRR = PIN_MAP[_pin].gpio_pin)
   #define pinHI(_pin) (PIN_MAP[_pin].gpio_peripheral->BSRR = PIN_MAP[_pin].gpio_pin)
@@ -16,62 +15,34 @@
 // fast pin access
 #define pinSet(_pin, _hilo) (_hilo ? pinHI(_pin) : pinLO(_pin))
 
-NeoPixel_Driver_Blocking::NeoPixel_Driver_Blocking(uint8_t p, uint8_t t) :
+NeoPixel_BitBang::NeoPixel_BitBang(uint8_t p, uint8_t t) :
   type(t), endTime(0)
 {
   setPin(p);
 }
 
-void NeoPixel_Driver_Blocking::begin() {
+void NeoPixel_BitBang::begin() {
   pinMode(pin, OUTPUT);
   digitalWrite(pin, LOW);
 }
 
-void NeoPixel_Driver_Blocking::end() {
+void NeoPixel_BitBang::end() {
   pinMode(pin, INPUT);
 }
 
 // Set the output pin number
-void NeoPixel_Driver_Blocking::setPin(uint8_t p) {
+void NeoPixel_BitBang::setPin(uint8_t p) {
   pin = p;
 }
 
-void NeoPixel_Driver_Blocking::updateLength(uint16_t numBytes) {
+void NeoPixel_BitBang::updateLength(uint16_t numBytes) {
   // nothing to do here for this driver
 }
 
-void NeoPixel_Driver_Blocking::show(uint8_t* pixels, uint16_t numBytes) {
+void NeoPixel_BitBang::show(uint8_t* pixels, uint16_t numBytes, uint32_t waitTime) {
   if(!pixels) return;
 
-  // Data latch = 24 or 50 microsecond pause in the output stream.  Rather than
-  // put a delay at the end of the function, the ending time is noted and
-  // the function will simply hold off (if needed) on issuing the
-  // subsequent round of data until the latch time has elapsed.  This
-  // allows the mainline code to start generating the next frame of data
-  // rather than stalling for the latch.
-  uint32_t wait_time; // wait time in microseconds.
-  switch(type) {
-    case TM1803: { // TM1803 = 24us reset pulse
-        wait_time = 24L;
-      } break;
-    case SK6812RGBW: { // SK6812RGBW = 80us reset pulse
-        wait_time = 80L;
-      } break;
-    case TM1829: { // TM1829 = 500us reset pulse
-        wait_time = 500L;
-      } break;
-    case WS2812B: // WS2812, WS2812B & WS2813 = 300us reset pulse
-    case WS2812B2: {
-        wait_time = 300L;
-      } break;
-    case WS2811: // WS2811, WS2812B_FAST & WS2812B2_FAST = 50us reset pulse
-    case WS2812B_FAST:
-    case WS2812B2_FAST:
-    default: {   // default = 50us reset pulse
-        wait_time = 50L;
-      } break;
-  }
-  while((micros() - endTime) < wait_time);
+  while((micros() - endTime) < waitTime);
   // endTime is a private member (rather than global var) so that multiple
   // instances on different pins can be quickly issued in succession (each
   // instance doesn't delay the next).
@@ -723,4 +694,4 @@ void NeoPixel_Driver_Blocking::show(uint8_t* pixels, uint16_t numBytes) {
   endTime = micros(); // Save EOD time for latch on next call
 }
 
-#endif // USE_DRIVER_BLOCKING
+#endif // USE_DRIVER_BITBANG

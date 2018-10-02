@@ -7,7 +7,7 @@
 
 #include "neopixel-driver-blocking.h"
 
-NeoPixel_Driver_NrfPwm* NeoPixel_Driver_NrfPwm::instance = NULL;
+NeoPixel_NrfPwm* NeoPixel_NrfPwm::instance = NULL;
 
 #include "nrf_gpio.h"
 #include "pinmap_impl.h"
@@ -39,17 +39,17 @@ const nrfx_pwm_t pwms[] = {
     NRFX_PWM_INSTANCE(3)
 };
 
-NeoPixel_Driver_NrfPwm::NeoPixel_Driver_NrfPwm(uint8_t p, uint8_t t) :
+NeoPixel_NrfPwm::NeoPixel_NrfPwm(uint8_t p, uint8_t t) :
   type(t), endTime(0), active(false), bits(NULL)
 {
   setPin(p);
 }
 
-NeoPixel_Driver_NrfPwm::~NeoPixel_Driver_NrfPwm() {
+NeoPixel_NrfPwm::~NeoPixel_NrfPwm() {
   updateLength(0);
 }
 
-void NeoPixel_Driver_NrfPwm::updateLength(uint16_t numBytes) {
+void NeoPixel_NrfPwm::updateLength(uint16_t numBytes) {
   waitForInactive();
   if (bits) {
     free(bits);
@@ -66,7 +66,9 @@ void NeoPixel_Driver_NrfPwm::updateLength(uint16_t numBytes) {
   }
 }
 
-void NeoPixel_Driver_NrfPwm::begin() {
+void NeoPixel_NrfPwm::begin() {
+  // TODO: use HAL_Validate_Pin_Function
+
   // Set up hardware PWM peripheral to output Neopixel waveform
   NRF5x_Pin_Info*  PIN_MAP = HAL_Pin_Map();
   uint8_t          pwm_num = PIN_MAP[pin].pwm_instance;
@@ -93,55 +95,26 @@ void NeoPixel_Driver_NrfPwm::begin() {
   };
 
   nrfx_pwm_init(&pwms[pwm_num], &config, stopHandler);
-  HAL_Set_Pin_Function(pin, PF_PWM);
 }
 
-void NeoPixel_Driver_NrfPwm::end() {
+void NeoPixel_NrfPwm::end() {
   waitForInactive();
   // TODO
 }
 
 // Set the output pin number
-void NeoPixel_Driver_NrfPwm::setPin(uint8_t p) {
+void NeoPixel_NrfPwm::setPin(uint8_t p) {
   pin = p;
 }
 
-void NeoPixel_Driver_NrfPwm::show(uint8_t* pixels, uint16_t numBytes) {
+void NeoPixel_NrfPwm::show(uint8_t* pixels, uint16_t numBytes, uint32_t waitTime) {
   if(!pixels || !bits) return;
 
   waitForInactive();
 
   pixelsToBits(pixels, numBytes);
 
-  // Data latch = 24 or 50 microsecond pause in the output stream.  Rather than
-  // put a delay at the end of the function, the ending time is noted and
-  // the function will simply hold off (if needed) on issuing the
-  // subsequent round of data until the latch time has elapsed.  This
-  // allows the mainline code to start generating the next frame of data
-  // rather than stalling for the latch.
-  uint32_t wait_time; // wait time in microseconds.
-  switch(type) {
-    case TM1803: { // TM1803 = 24us reset pulse
-        wait_time = 24L;
-      } break;
-    case SK6812RGBW: { // SK6812RGBW = 80us reset pulse
-        wait_time = 80L;
-      } break;
-    case TM1829: { // TM1829 = 500us reset pulse
-        wait_time = 500L;
-      } break;
-    case WS2812B: // WS2812, WS2812B & WS2813 = 300us reset pulse
-    case WS2812B2: {
-        wait_time = 300L;
-      } break;
-    case WS2811: // WS2811, WS2812B_FAST & WS2812B2_FAST = 50us reset pulse
-    case WS2812B_FAST:
-    case WS2812B2_FAST:
-    default: {   // default = 50us reset pulse
-        wait_time = 50L;
-      } break;
-  }
-  while((micros() - endTime) < wait_time);
+  while((micros() - endTime) < waitTime);
 
   active = true;
   instance = this;
@@ -159,20 +132,20 @@ void NeoPixel_Driver_NrfPwm::show(uint8_t* pixels, uint16_t numBytes) {
   nrfx_pwm_simple_playback(&pwms[pwm_num], &seq, 1, NRFX_PWM_FLAG_STOP);
 }
 
-void NeoPixel_Driver_NrfPwm::waveformDone() {
+void NeoPixel_NrfPwm::waveformDone() {
   active = false;
   endTime = micros();
 }
 
-void NeoPixel_Driver_NrfPwm::stopHandler(nrfx_pwm_evt_type_t eventType) {
+void NeoPixel_NrfPwm::stopHandler(nrfx_pwm_evt_type_t eventType) {
   if (eventType == NRFX_PWM_EVT_STOPPED) {
-    if (NeoPixel_Driver_NrfPwm::instance) {
-      NeoPixel_Driver_NrfPwm::instance->waveformDone();
+    if (NeoPixel_NrfPwm::instance) {
+      NeoPixel_NrfPwm::instance->waveformDone();
     }
   }
 }
 
-void NeoPixel_Driver_NrfPwm::pixelsToBits(uint8_t* pixels, uint16_t numBytes) {
+void NeoPixel_NrfPwm::pixelsToBits(uint8_t* pixels, uint16_t numBytes) {
   uint16_t bit0 = (freqkHz() == 800) ? BIT0_800KHZ : BIT0_400KHZ;
   uint16_t bit1 = (freqkHz() == 800) ? BIT1_800KHZ : BIT1_400KHZ;
   uint16_t* bitPtr = &bits[0];
@@ -194,11 +167,11 @@ void NeoPixel_Driver_NrfPwm::pixelsToBits(uint8_t* pixels, uint16_t numBytes) {
   }
 }
 
-void NeoPixel_Driver_NrfPwm::waitForInactive() {
+void NeoPixel_NrfPwm::waitForInactive() {
     while (active) delay(1);
 }
 
-uint16_t NeoPixel_Driver_NrfPwm::freqkHz() const {
+uint16_t NeoPixel_NrfPwm::freqkHz() const {
   return (type == WS2811 || type == TM1803) ? 400 : 800;
 }
 
