@@ -1192,7 +1192,6 @@ void Adafruit_NeoPixel::beginPwm(void) {
     };
 
     nrfx_pwm_init(&pwms[pwm_num], &config, stopHandler);
-    HAL_Set_Pin_Function(pin, PF_PWM);
 }
 
 void Adafruit_NeoPixel::stopPwm() {
