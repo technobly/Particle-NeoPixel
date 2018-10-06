@@ -1,3 +1,29 @@
+/*-------------------------------------------------------------------------
+  Driver to generate the Neopixel waveform by turning the pin on, executing a precise
+  number of delay instructions then turning the pin off again. This is called bit banging.
+
+  The downside of the bit bang driver is that it needs to disable interrupts and occupy
+  the whole CPU while generating the waveform.
+  --------------------------------------------------------------------*/
+
+/* ======================= neopixel-bitbang.h ======================= */
+/*--------------------------------------------------------------------
+  This file is part of the Adafruit NeoPixel library.
+
+  NeoPixel is free software: you can redistribute it and/or modify
+  it under the terms of the GNU Lesser General Public License as
+  published by the Free Software Foundation, either version 3 of
+  the License, or (at your option) any later version.
+
+  NeoPixel is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU Lesser General Public License for more details.
+
+  You should have received a copy of the GNU Lesser General Public
+  License along with NeoPixel.  If not, see
+  <http://www.gnu.org/licenses/>.
+  --------------------------------------------------------------------*/
 #pragma once
 
 #include "neopixel.h"

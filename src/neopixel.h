@@ -13,7 +13,7 @@
   - TM1829 pixels
 
   PLEASE NOTE that the NeoPixels require 5V level inputs
-  and these microcontrollers only have 3.3V level outputs. Level
+  and the supported microcontrollers only have 3.3V level outputs. Level
   shifting is necessary, but will require a fast device such as one of
   the following:
 
@@ -32,7 +32,7 @@
   from Adafruit!
   --------------------------------------------------------------------*/
 
-/* ======================= Adafruit_NeoPixel.h ======================= */
+/* ======================= neopixel.h ======================= */
 /*--------------------------------------------------------------------
   This file is part of the Adafruit NeoPixel library.
 
@@ -52,11 +52,6 @@
   --------------------------------------------------------------------*/
 
 #pragma once
-
-// FIXME: remove before release
-#ifndef PLATFORM_ID
-#define PLATFORM_ID 14
-#endif
 
 /* Pick which low-lever driver to use
  *
@@ -137,13 +132,11 @@ class Adafruit_NeoPixel {
 
  private:
   bool begun;         // true if begin() previously called
-  
-  uint16_t numLEDs;       // Number of RGB LEDs in strip
-  uint16_t numBytes;      // Size of 'pixels' buffer below
-  const uint8_t type;          // Pixel type flag (400 vs 800 KHz)
-  uint8_t brightness;
-  uint8_t* pixels;        // Holds LED color values (3 bytes each)
+  uint16_t numLEDs;   // Number of RGB LEDs in strip
+  uint16_t numBytes;  // Size of 'pixels' buffer below
+  const uint8_t type; // Pixel type flag (400 vs 800 KHz)
+  uint8_t brightness; // How much to dim the LED intensity
+  uint8_t* pixels;    // Holds LED color values (3 bytes each)
 
-  // Create an instance of the appropriate driver
-  DECLARE_DRIVER;
+  DECLARE_DRIVER;     // Create an instance of the appropriate driver
 };

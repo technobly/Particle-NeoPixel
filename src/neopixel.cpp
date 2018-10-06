@@ -32,7 +32,7 @@
   from Adafruit!
   --------------------------------------------------------------------*/
 
-/* ======================= Adafruit_NeoPixel.cpp ======================= */
+/* ======================= neopixel.cpp ======================= */
 /*-------------------------------------------------------------------------
   This file is part of the Adafruit NeoPixel library.
 
@@ -51,12 +51,6 @@
   <http://www.gnu.org/licenses/>.
   -------------------------------------------------------------------------*/
 
-// FIXME: remove before release
-#ifndef PLATFORM_ID
-#define PLATFORM_ID 14
-#define USE_NRF_PWM
-#endif
-
 #include "neopixel.h"
 
 Adafruit_NeoPixel::Adafruit_NeoPixel(uint16_t n, uint8_t p, uint8_t t) :
@@ -67,7 +61,9 @@ Adafruit_NeoPixel::Adafruit_NeoPixel(uint16_t n, uint8_t p, uint8_t t) :
 
 Adafruit_NeoPixel::~Adafruit_NeoPixel() {
   updateLength(0);
-  if (begun) end();
+  if (begun) {
+    end();
+  }
 }
 
 void Adafruit_NeoPixel::updateLength(uint16_t n) {
@@ -95,13 +91,17 @@ void Adafruit_NeoPixel::updateLength(uint16_t n) {
 }
 
 void Adafruit_NeoPixel::begin() {
-  driver.begin();
-  begun = true;
+  if (!begun) {
+    driver.begin();
+    begun = true;
+  }
 }
 
 void Adafruit_NeoPixel::end() {
-  driver.end();
-  begun = false;
+  if (begun) {
+    driver.end();
+    begun = false;
+  }
 }
 
 // Set the output pin number
@@ -149,128 +149,128 @@ void Adafruit_NeoPixel::show() {
 }
 
 // Set pixel color from separate R,G,B components:
-void Adafruit_NeoPixel::setPixelColor(
-  uint16_t n, uint8_t r, uint8_t g, uint8_t b) {
-  if(n < numLEDs) {
-    if(brightness) { // See notes in setBrightness()
-      r = (r * brightness) >> 8;
-      g = (g * brightness) >> 8;
-      b = (b * brightness) >> 8;
-    }
-    uint8_t *p = &pixels[n * 3];
-    switch(type) {
-      case WS2812B: // WS2812, WS2812B & WS2813 is GRB order.
-      case WS2812B_FAST:
-      case WS2812B2:
-      case WS2812B2_FAST: {
-          *p++ = g;
-          *p++ = r;
-          *p = b;
-        } break;
-      case TM1829: { // TM1829 is special RBG order
-          if(r == 255) r = 254; // 255 on RED channel causes display to be in a special mode.
-          *p++ = r;
-          *p++ = b;
-          *p = g;
-        } break;
-      case WS2811: // WS2811 is RGB order
-      case TM1803: // TM1803 is RGB order
-      default: {   // default is RGB order
-          *p++ = r;
-          *p++ = g;
-          *p = b;
-        } break;
-    }
+void Adafruit_NeoPixel::setPixelColor(uint16_t n, uint8_t r, uint8_t g, uint8_t b) {
+  if(n >= numLEDs) {
+    return;
+  }
+  if(brightness) { // See notes in setBrightness()
+    r = (r * brightness) >> 8;
+    g = (g * brightness) >> 8;
+    b = (b * brightness) >> 8;
+  }
+  uint8_t *p = &pixels[n * 3];
+  switch(type) {
+    case WS2812B: // WS2812, WS2812B & WS2813 is GRB order.
+    case WS2812B_FAST:
+    case WS2812B2:
+    case WS2812B2_FAST: {
+        *p++ = g;
+        *p++ = r;
+        *p = b;
+      } break;
+    case TM1829: { // TM1829 is special RBG order
+        if(r == 255) r = 254; // 255 on RED channel causes display to be in a special mode.
+        *p++ = r;
+        *p++ = b;
+        *p = g;
+      } break;
+    case WS2811: // WS2811 is RGB order
+    case TM1803: // TM1803 is RGB order
+    default: {   // default is RGB order
+        *p++ = r;
+        *p++ = g;
+        *p = b;
+      } break;
   }
 }
 
 // Set pixel color from separate R,G,B,W components:
-void Adafruit_NeoPixel::setPixelColor(
-  uint16_t n, uint8_t r, uint8_t g, uint8_t b, uint8_t w) {
-  if(n < numLEDs) {
-    if(brightness) { // See notes in setBrightness()
-      r = (r * brightness) >> 8;
-      g = (g * brightness) >> 8;
-      b = (b * brightness) >> 8;
-      w = (w * brightness) >> 8;
-    }
-    uint8_t *p = &pixels[n * bytesPerPixel()];
-    switch(type) {
-      case WS2812B: // WS2812, WS2812B & WS2813 is GRB order.
-      case WS2812B_FAST:
-      case WS2812B2:
-      case WS2812B2_FAST: {
-          *p++ = g;
-          *p++ = r;
-          *p = b;
-        } break;
-      case TM1829: { // TM1829 is special RBG order
-          if(r == 255) r = 254; // 255 on RED channel causes display to be in a special mode.
-          *p++ = r;
-          *p++ = b;
-          *p = g;
-        } break;
-      case SK6812RGBW: { // SK6812RGBW is RGBW order
-          *p++ = r;
-          *p++ = g;
-          *p++ = b;
-          *p = w;
-        } break;
-      case WS2811: // WS2811 is RGB order
-      case TM1803: // TM1803 is RGB order
-      default: {   // default is RGB order
-          *p++ = r;
-          *p++ = g;
-          *p = b;
-        } break;
-    }
+void Adafruit_NeoPixel::setPixelColor(uint16_t n, uint8_t r, uint8_t g, uint8_t b, uint8_t w) {
+  if(n >= numLEDs) {
+    return;
+  }
+  if(brightness) { // See notes in setBrightness()
+    r = (r * brightness) >> 8;
+    g = (g * brightness) >> 8;
+    b = (b * brightness) >> 8;
+    w = (w * brightness) >> 8;
+  }
+  uint8_t *p = &pixels[n * bytesPerPixel()];
+  switch(type) {
+    case WS2812B: // WS2812, WS2812B & WS2813 is GRB order.
+    case WS2812B_FAST:
+    case WS2812B2:
+    case WS2812B2_FAST: {
+        *p++ = g;
+        *p++ = r;
+        *p = b;
+      } break;
+    case TM1829: { // TM1829 is special RBG order
+        if(r == 255) r = 254; // 255 on RED channel causes display to be in a special mode.
+        *p++ = r;
+        *p++ = b;
+        *p = g;
+      } break;
+    case SK6812RGBW: { // SK6812RGBW is RGBW order
+        *p++ = r;
+        *p++ = g;
+        *p++ = b;
+        *p = w;
+      } break;
+    case WS2811: // WS2811 is RGB order
+    case TM1803: // TM1803 is RGB order
+    default: {   // default is RGB order
+        *p++ = r;
+        *p++ = g;
+        *p = b;
+      } break;
   }
 }
 
 // Set pixel color from 'packed' 32-bit RGB color:
 // If RGB+W color, order of bytes is WRGB in packed 32-bit form
 void Adafruit_NeoPixel::setPixelColor(uint16_t n, uint32_t c) {
-  if(n < numLEDs) {
-    uint8_t
-      r = (uint8_t)(c >> 16),
-      g = (uint8_t)(c >>  8),
-      b = (uint8_t)c;
-    if(brightness) { // See notes in setBrightness()
-      r = (r * brightness) >> 8;
-      g = (g * brightness) >> 8;
-      b = (b * brightness) >> 8;
-    }
-    uint8_t *p = &pixels[n * bytesPerPixel()];
-    switch(type) {
-      case WS2812B: // WS2812, WS2812B & WS2813 is GRB order.
-      case WS2812B_FAST:
-      case WS2812B2:
-      case WS2812B2_FAST: {
-          *p++ = g;
-          *p++ = r;
-          *p = b;
-        } break;
-      case TM1829: { // TM1829 is special RBG order
-          if(r == 255) r = 254; // 255 on RED channel causes display to be in a special mode.
-          *p++ = r;
-          *p++ = b;
-          *p = g;
-        } break;
-      case SK6812RGBW: { // SK6812RGBW is RGBW order
-          uint8_t w = (uint8_t)(c >> 24);
-          *p++ = r;
-          *p++ = g;
-          *p++ = b;
-          *p = brightness ? ((w * brightness) >> 8) : w;
-        } break;
-      case WS2811: // WS2811 is RGB order
-      case TM1803: // TM1803 is RGB order
-      default: {   // default is RGB order
-          *p++ = r;
-          *p++ = g;
-          *p = b;
-        } break;
-    }
+  if(n >= numLEDs) {
+    return;
+  }
+  uint8_t r = (uint8_t)(c >> 16);
+  uint8_t g = (uint8_t)(c >>  8);
+  uint8_t b = (uint8_t)c;
+  if(brightness) { // See notes in setBrightness()
+    r = (r * brightness) >> 8;
+    g = (g * brightness) >> 8;
+    b = (b * brightness) >> 8;
+  }
+  uint8_t *p = &pixels[n * bytesPerPixel()];
+  switch(type) {
+    case WS2812B: // WS2812, WS2812B & WS2813 is GRB order.
+    case WS2812B_FAST:
+    case WS2812B2:
+    case WS2812B2_FAST: {
+        *p++ = g;
+        *p++ = r;
+        *p = b;
+      } break;
+    case TM1829: { // TM1829 is special RBG order
+        if(r == 255) r = 254; // 255 on RED channel causes display to be in a special mode.
+        *p++ = r;
+        *p++ = b;
+        *p = g;
+      } break;
+    case SK6812RGBW: { // SK6812RGBW is RGBW order
+        uint8_t w = (uint8_t)(c >> 24);
+        *p++ = r;
+        *p++ = g;
+        *p++ = b;
+        *p = brightness ? ((w * brightness) >> 8) : w;
+      } break;
+    case WS2811: // WS2811 is RGB order
+    case TM1803: // TM1803 is RGB order
+    default: {   // default is RGB order
+        *p++ = r;
+        *p++ = g;
+        *p = b;
+      } break;
   }
 }
 

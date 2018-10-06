@@ -1,12 +1,40 @@
+/*-------------------------------------------------------------------------
+  Driver to generate the Neopixel waveform by turning the pin on, executing a precise
+  number of delay instructions then turning the pin off again. This is called bit banging.
+
+  The downside of the bit bang driver is that it needs to disable interrupts and occupy
+  the whole CPU while generating the waveform.
+  --------------------------------------------------------------------*/
+
+/* ======================= neopixel-bitbang.cpp ======================= */
+/*--------------------------------------------------------------------
+  This file is part of the Adafruit NeoPixel library.
+
+  NeoPixel is free software: you can redistribute it and/or modify
+  it under the terms of the GNU Lesser General Public License as
+  published by the Free Software Foundation, either version 3 of
+  the License, or (at your option) any later version.
+
+  NeoPixel is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  GNU Lesser General Public License for more details.
+
+  You should have received a copy of the GNU Lesser General Public
+  License along with NeoPixel.  If not, see
+  <http://www.gnu.org/licenses/>.
+  --------------------------------------------------------------------*/
 #include "neopixel.h"
 
 #ifdef USE_DRIVER_BITBANG
 
 // Access the pin hardware register directly for the fastest possible access
-#if PLATFORM_ID == 0 // Core (0)
+#if PLATFORM_ID == 0
+  // Core (0)
   #define pinLO(_pin) (PIN_MAP[_pin].gpio_peripheral->BRR = PIN_MAP[_pin].gpio_pin)
   #define pinHI(_pin) (PIN_MAP[_pin].gpio_peripheral->BSRR = PIN_MAP[_pin].gpio_pin)
-#elif (PLATFORM_ID == 6) || (PLATFORM_ID == 8) || (PLATFORM_ID == 10) || (PLATFORM_ID == 88) // Photon (6), P1 (8), Electron (10) or Redbear Duo (88)
+#elif (PLATFORM_ID == 6) || (PLATFORM_ID == 8) || (PLATFORM_ID == 10) || (PLATFORM_ID == 88)
+  // Photon (6), P1 (8), Electron (10) or Redbear Duo (88)
   STM32_Pin_Info* PIN_MAP2 = HAL_Pin_Map(); // Pointer required for highest access speed
   #define pinLO(_pin) (PIN_MAP2[_pin].gpio_peripheral->BSRRH = PIN_MAP2[_pin].gpio_pin)
   #define pinHI(_pin) (PIN_MAP2[_pin].gpio_peripheral->BSRRL = PIN_MAP2[_pin].gpio_pin)
