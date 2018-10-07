@@ -60,9 +60,10 @@ void NeoPixel_NrfPwm::updateLength(uint16_t numBytes) {
     return;
   }
 
-  bits = (uint16_t*)malloc(numBytes * 8);
+  size_t bitsSize = numBytes * 8 * sizeof(uint16_t);
+  bits = (uint16_t*)malloc(bitsSize);
   if (bits) {
-    memset(bits, 0, numBytes * 8);
+    memset(bits, 0, bitsSize);
   }
 }
 
