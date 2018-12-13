@@ -1,8 +1,18 @@
-/*
+/**
  * This is a minimal example, see extra-examples.cpp for a version
  * with more explantory documentation, example routines, how to
  * hook up your pixels and all of the pixel types that are supported.
  *
+ * On Photon, Electron, P1, Core and Duo, any pin can be used for Neopixel.
+ *
+ * On the Argon, Boron and Xenon, only these pins can be used for Neopixel:
+ * - D2, D3, A4, A5
+ * - D4, D6, D7, D8
+ * - A0, A1, A2, A3
+ *
+ * In addition on the Argon/Boron/Xenon, only one pin per group can be used at a time.
+ * So it's OK to have one Adafruit_NeoPixel instance on pin D2 and another one on pin
+ * A2, but it's not possible to have one on pin A0 and another one on pin A1.
  */
 
 #include "Particle.h"

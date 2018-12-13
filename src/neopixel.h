@@ -1,6 +1,7 @@
 /*-------------------------------------------------------------------------
-  Spark Core, Particle Photon, P1, Electron and RedBear Duo library to control
-  WS2811/WS2812/WS2813 based RGB LED devices such as Adafruit NeoPixel strips.
+  Particle Core, Particle Photon, P1, Electron, Argon, Boron, Xenon and
+  RedBear Duo library to control WS2811/WS2812/WS2813 based RGB LED
+  devices such as Adafruit NeoPixel strips.
 
   Supports:
   - 800 KHz WS2812, WS2812B, WS2813 and 400kHz bitstream and WS2811
@@ -12,9 +13,9 @@
   - TM1829 pixels
 
   PLEASE NOTE that the NeoPixels require 5V level inputs
-  and the Spark Core, Particle Photon, P1, Electron and RedBear Duo only
-  have 3.3V level outputs. Level shifting is necessary, but will require
-  a fast device such as one of the following:
+  and the supported microcontrollers only have 3.3V level outputs. Level
+  shifting is necessary, but will require a fast device such as one of
+  the following:
 
   [SN74HCT125N]
   http://www.digikey.com/product-detail/en/SN74HCT125N/296-8386-5-ND/376860
@@ -31,7 +32,7 @@
   from Adafruit!
   --------------------------------------------------------------------*/
 
-/* ======================= Adafruit_NeoPixel.h ======================= */
+/* ======================= neopixel.h ======================= */
 /*--------------------------------------------------------------------
   This file is part of the Adafruit NeoPixel library.
 
@@ -50,8 +51,8 @@
   <http://www.gnu.org/licenses/>.
   --------------------------------------------------------------------*/
 
-#ifndef SPARK_NEOPIXEL_H
-#define SPARK_NEOPIXEL_H
+#ifndef PARTICLE_NEOPIXEL_H
+#define PARTICLE_NEOPIXEL_H
 
 #include "Particle.h"
 
@@ -122,4 +123,4 @@ class Adafruit_NeoPixel {
     endTime;       // Latch timing reference
 };
 
-#endif // ADAFRUIT_NEOPIXEL_H
+#endif // PARTICLE_NEOPIXEL_H

@@ -1,35 +1,6 @@
-/*-------------------------------------------------------------------------
-  Spark Core, Particle Photon, P1, Electron and RedBear Duo library to control
-  WS2811/WS2812/WS2813 based RGB LED devices such as Adafruit NeoPixel strips.
-
-  Supports:
-  - 800 KHz WS2812, WS2812B, WS2813 and 400kHz bitstream and WS2811
-  - 800 KHz bitstream SK6812RGBW (NeoPixel RGBW pixel strips)
-    (use 'SK6812RGBW' as PIXEL_TYPE)
-
-  Also supports:
-  - Radio Shack Tri-Color Strip with TM1803 controller 400kHz bitstream.
-  - TM1829 pixels
-
-  PLEASE NOTE that the NeoPixels require 5V level inputs
-  and the Spark Core, Particle Photon, P1, Electron and RedBear Duo only
-  have 3.3V level outputs. Level shifting is necessary, but will require
-  a fast device such as one of the following:
-
-  [SN74HCT125N]
-  http://www.digikey.com/product-detail/en/SN74HCT125N/296-8386-5-ND/376860
-
-  [SN74HCT245N]
-  http://www.digikey.com/product-detail/en/SN74HCT245N/296-1612-5-ND/277258
-
-  Written by Phil Burgess / Paint Your Dragon for Adafruit Industries.
-  Modified to work with Particle devices by Technobly.
-  Contributions by PJRC and other members of the open source community.
-
-  Adafruit invests time and resources providing this open source code,
-  please support Adafruit and open-source hardware by purchasing products
-  from Adafruit!
-  --------------------------------------------------------------------*/
+/**
+ * This is the more completely documented example! (see below)
+ */
 
 /* ======================= includes ================================= */
 
@@ -58,8 +29,21 @@ SYSTEM_MODE(AUTOMATIC);
 //                     need to count the number of segments, i.e. the
 //                     number of controllers in your stripe, not the number
 //                     of individual LEDs!
-// Parameter 2 = pin number (most are valid)
-//               note: if not specified, D2 is selected for you.
+//
+// Parameter 2 = pin number (if not specified, D2 is selected for you)
+//
+//               On Photon, Electron, P1, Core and Duo, any pin can be used for Neopixel.
+//
+//               On the Argon, Boron and Xenon, only these pins can be used for Neopixel:
+//               - D2, D3, A4, A5
+//               - D4, D6, D7, D8
+//               - A0, A1, A2, A3
+//
+//               In addition on the Argon/Boron/Xenon, only one pin per group can be used
+//               at a time. So it's OK to have one Adafruit_NeoPixel instance on pin D2 and
+//               another one on pin A2, but it's not possible to have one on pin A0 and
+//               another one on pin A1.
+//
 // Parameter 3 = pixel type [ WS2812, WS2812B, WS2812B2, WS2813, WS2811,
 //                            TM1803, TM1829, SK6812RGBW, WS2812B_FAST,
 //                            WS2812B2_FAST ]

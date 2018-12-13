@@ -1,7 +1,8 @@
 # Particle-NeoPixel
 
-A library for manipulating NeoPixel RGB LEDs for the Spark Core, Particle Photon, P1 and Electron.
-Also now supports the [RedBear Duo](https://github.com/redbear/Duo).
+A library for manipulating NeoPixel RGB LEDs for the:
+
+Particle Core, Photon, P1, Electron, Argon, Boron, Xenon and RedBear Duo
 
 Implementation based on Adafruit's NeoPixel Library.
 
@@ -62,7 +63,18 @@ Creates an object to interact wth a NeoPixel strip.
 
 _Note: for some stripes like those with the TM1829, you need to count the number of segments, i.e. the number of controllers in your stripe, not the number of individual LEDs!_
 
-`PIXEL_PIN` is the pin number where your NeoPixel are connected (A0-A7, D0-D7, etc). Most pins are valid. If omitted, D2 is used.
+`PIXEL_PIN` is the pin number where your NeoPixel are connected (A0-A7, D0-D7, etc). If omitted, D2 is used.
+
+On Photon, Electron, P1, Core and Duo, any pin can be used for Neopixel.
+
+On the Argon, Boron and Xenon, only these pins can be used for Neopixel:
+- D2, D3, A4, A5
+- D4, D6, D7, D8
+- A0, A1, A2, A3
+
+In addition on the Argon/Boron/Xenon, only one pin per group can be used at a time. So it's OK to have one Adafruit_NeoPixel
+instance on pin D2 and another one on pin A2, but it's not possible to have one on pin A0 and another
+one on pin A1.
 
 `PIXEL_TYPE` is the type of LED, one of WS2811, WS2812, WS2812B, WS2812B2, WS2813, TM1803, TM1829, SK6812RGBW. If omitted, WS2812B is used.
 
@@ -199,6 +211,6 @@ Get the number of LEDs in the NeoPixel strip. `numPixels` is an alias for `getNu
 - Quad Level Shifter IC: [SN74AHCT125N](http://www.digikey.com/product-detail/en/SN74AHCT125N/296-4655-5-ND/375798) (Digikey)
 
 ## License
-Copyright 2014-2017 Technobly, Phil Burgess
+Copyright 2014-2018 Technobly, Julien Vanier, Cullen Shane, Phil Burgess
 
 Released under the LGPL license

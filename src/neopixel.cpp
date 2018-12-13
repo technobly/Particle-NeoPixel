@@ -1,6 +1,7 @@
 /*-------------------------------------------------------------------------
-  Spark Core, Particle Photon, P1, Electron and RedBear Duo library to control
-  WS2811/WS2812/WS2813 based RGB LED devices such as Adafruit NeoPixel strips.
+  Particle Core, Particle Photon, P1, Electron, Argon, Boron, Xenon and
+  RedBear Duo library to control WS2811/WS2812/WS2813 based RGB LED
+  devices such as Adafruit NeoPixel strips.
 
   Supports:
   - 800 KHz WS2812, WS2812B, WS2813 and 400kHz bitstream and WS2811
@@ -12,9 +13,9 @@
   - TM1829 pixels
 
   PLEASE NOTE that the NeoPixels require 5V level inputs
-  and the Spark Core, Particle Photon, P1, Electron and RedBear Duo only
-  have 3.3V level outputs. Level shifting is necessary, but will require
-  a fast device such as one of the following:
+  and the supported microcontrollers only have 3.3V level outputs. Level
+  shifting is necessary, but will require a fast device such as one of
+  the following:
 
   [SN74HCT125N]
   http://www.digikey.com/product-detail/en/SN74HCT125N/296-8386-5-ND/376860
@@ -31,7 +32,7 @@
   from Adafruit!
   --------------------------------------------------------------------*/
 
-/* ======================= Adafruit_NeoPixel.cpp ======================= */
+/* ======================= neopixel.cpp ======================= */
 /*-------------------------------------------------------------------------
   This file is part of the Adafruit NeoPixel library.
 
@@ -67,7 +68,7 @@
   #define pinLO(_pin) (nrf_gpio_pin_clear(NRF_GPIO_PIN_MAP(PIN_MAP2[_pin].gpio_port, PIN_MAP2[_pin].gpio_pin)))
   #define pinHI(_pin) (nrf_gpio_pin_set(NRF_GPIO_PIN_MAP(PIN_MAP2[_pin].gpio_port, PIN_MAP2[_pin].gpio_pin)))
 #else
-  #error "*** PLATFORM_ID not supported by this library. PLATFORM should be Core, Photon, P1, Electron or RedBear Duo ***"
+  #error "*** PLATFORM_ID not supported by this library. PLATFORM should be Particle Core, Photon, Electron, Argon, Boron, Xenon and RedBear Duo ***"
 #endif
 // fast pin access
 #define pinSet(_pin, _hilo) (_hilo ? pinHI(_pin) : pinLO(_pin))
