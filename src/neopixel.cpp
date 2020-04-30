@@ -85,6 +85,14 @@ Adafruit_NeoPixel::~Adafruit_NeoPixel() {
   if (begun) pinMode(pin, INPUT);
 }
 
+uint8_t Adafruit_NeoPixel::getPin() const {
+    return pin;
+}
+
+uint8_t Adafruit_NeoPixel::getType() const {
+    return type;
+}
+
 void Adafruit_NeoPixel::updateLength(uint16_t n) {
   if (pixels) free(pixels); // Free existing data (if any)
 
