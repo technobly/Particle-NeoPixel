@@ -1,5 +1,5 @@
 /*-------------------------------------------------------------------------
-  Particle Core, Particle Photon, P1, Electron, Argon, Boron, Xenon and
+  Particle Core, Particle Photon, P1, Electron, Argon, Boron, Xenon, B SoM, B5 SoM, E SoM X, Tracker and
   RedBear Duo library to control WS2811/WS2812/WS2813 based RGB LED
   devices such as Adafruit NeoPixel strips.
 
@@ -57,18 +57,27 @@
   #define pinLO(_pin) (PIN_MAP[_pin].gpio_peripheral->BRR = PIN_MAP[_pin].gpio_pin)
   #define pinHI(_pin) (PIN_MAP[_pin].gpio_peripheral->BSRR = PIN_MAP[_pin].gpio_pin)
 #elif (PLATFORM_ID == 6) || (PLATFORM_ID == 8) || (PLATFORM_ID == 10) || (PLATFORM_ID == 88) // Photon (6), P1 (8), Electron (10) or Redbear Duo (88)
+#if SYSTEM_VERSION < SYSTEM_VERSION_ALPHA(5,0,0,2)
   STM32_Pin_Info* PIN_MAP2 = HAL_Pin_Map(); // Pointer required for highest access speed
+#else
+  STM32_Pin_Info* PIN_MAP2 = hal_pin_map(); // Pointer required for highest access speed
+#endif // SYSTEM_VERSION < SYSTEM_VERSION_ALPHA(5,0,0,2)
   #define pinLO(_pin) (PIN_MAP2[_pin].gpio_peripheral->BSRRH = PIN_MAP2[_pin].gpio_pin)
   #define pinHI(_pin) (PIN_MAP2[_pin].gpio_peripheral->BSRRL = PIN_MAP2[_pin].gpio_pin)
-#elif (PLATFORM_ID == 12) || (PLATFORM_ID == 13) || (PLATFORM_ID == 14) // Argon (12), Boron (13), Xenon (14)
+// #elif (PLATFORM_ID == 12) || (PLATFORM_ID == 13) || (PLATFORM_ID == 14) // Argon (12), Boron (13), Xenon (14)
+#elif HAL_PLATFORM_NRF52840 // Argon, Boron, Xenon, B SoM, B5 SoM, E SoM X, Tracker
   #include "nrf.h"
   #include "nrf_gpio.h"
   #include "pinmap_impl.h"
+#if SYSTEM_VERSION < SYSTEM_VERSION_ALPHA(5,0,0,2)
   NRF5x_Pin_Info* PIN_MAP2 = HAL_Pin_Map();
+#else
+  NRF5x_Pin_Info* PIN_MAP2 = hal_pin_map();
+#endif // SYSTEM_VERSION < SYSTEM_VERSION_ALPHA(5,0,0,2)
   #define pinLO(_pin) (nrf_gpio_pin_clear(NRF_GPIO_PIN_MAP(PIN_MAP2[_pin].gpio_port, PIN_MAP2[_pin].gpio_pin)))
   #define pinHI(_pin) (nrf_gpio_pin_set(NRF_GPIO_PIN_MAP(PIN_MAP2[_pin].gpio_port, PIN_MAP2[_pin].gpio_pin)))
 #else
-  #error "*** PLATFORM_ID not supported by this library. PLATFORM should be Particle Core, Photon, Electron, Argon, Boron, Xenon and RedBear Duo ***"
+  #error "*** PLATFORM_ID not supported by this library. PLATFORM should be Particle Core, Photon, Electron, Argon, Boron, Xenon, RedBear Duo, B SoM, B5 SoM, E SoM X or Tracker ***"
 #endif
 // fast pin access
 #define pinSet(_pin, _hilo) (_hilo ? pinHI(_pin) : pinLO(_pin))

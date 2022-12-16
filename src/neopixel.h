@@ -1,5 +1,5 @@
 /*-------------------------------------------------------------------------
-  Particle Core, Particle Photon, P1, Electron, Argon, Boron, Xenon and
+  Particle Core, Particle Photon, P1, Electron, Argon, Boron, Xenon, B SoM, B5 SoM, E SoM X, Tracker and
   RedBear Duo library to control WS2811/WS2812/WS2813 based RGB LED
   devices such as Adafruit NeoPixel strips.
 
