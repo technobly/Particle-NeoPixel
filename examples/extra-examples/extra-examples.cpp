@@ -9,7 +9,7 @@
 
 /* ======================= prototypes =============================== */
 
-void colorAll(uint32_t c, uint8_t wait);
+void colorAll(uint32_t c, uint16_t wait);
 void colorWipe(uint32_t c, uint8_t wait);
 void rainbow(uint8_t wait);
 void rainbowCycle(uint8_t wait);
@@ -20,8 +20,15 @@ uint32_t Wheel(byte WheelPos);
 SYSTEM_MODE(AUTOMATIC);
 
 // IMPORTANT: Set pixel COUNT, PIN and TYPE
-#define PIXEL_COUNT 10
-#define PIXEL_PIN D2
+#if (PLATFORM_ID == 32)
+// MOSI pin MO
+#define PIXEL_PIN SPI
+// MOSI pin D2
+// #define PIXEL_PIN SPI1
+#else // #if (PLATFORM_ID == 32)
+#define PIXEL_PIN D3
+#endif
+#define PIXEL_COUNT 11
 #define PIXEL_TYPE WS2812B
 
 // Parameter 1 = number of pixels in strip
@@ -43,6 +50,14 @@ SYSTEM_MODE(AUTOMATIC);
 //               at a time. So it's OK to have one Adafruit_NeoPixel instance on pin D2 and
 //               another one on pin A2, but it's not possible to have one on pin A0 and
 //               another one on pin A1.
+//
+//               On Photon 2 / P2, only SPI(MOSI) or SPI1(D2) can be used for Neopixel,
+//               and only PIXEL_TYPE's WS2812, WS2812B, WS2813 are supported.
+//               - MISO (D12), SCK (D13) and SS (D8) can be used as GPIO when using SPI
+//               - MISO1 (D3), SCK1 (D4) and SS1 (D5) can be used and GPIO when using SPI1
+//               note: You may want to call System.disableFeature(FEATURE_ETHERNET_DETECTION);
+//                     to disable automatic Ethernet driver detection, which will cause some
+//                     glitches to SPI1 pins D2,D3,D4.
 //
 // Parameter 3 = pixel type [ WS2812, WS2812B, WS2812B2, WS2813, WS2811,
 //                            TM1803, TM1829, SK6812RGBW, WS2812B_FAST,
@@ -80,24 +95,24 @@ void loop() {
   // will be blocked.
   //--------------------------------------------------------------
 
-  //strip.setPixelColor(0, strip.Color(255, 0, 255));
-  //strip.show();
+  colorWipe(strip.Color(0, 255, 255), 40); // Cyan
+  colorWipe(strip.Color(255, 0, 0), 35);   // Red
+  colorWipe(strip.Color(0, 255, 0), 30);   // Green
+  colorWipe(strip.Color(0, 0, 255), 25);   // Blue
+  colorWipe(strip.Color(255, 0, 255), 20); // Magenta
 
-  //colorWipe(strip.Color(255, 0, 0), 50); // Red
+  rainbowCycle(20);
 
-  //colorWipe(strip.Color(0, 255, 0), 50); // Green
+  colorAll(strip.Color(255, 0, 0), 900);   // Red
+  colorAll(strip.Color(0, 255, 0), 1000);  // Green
+  colorAll(strip.Color(0, 0, 255), 800);   // Blue
+  colorAll(strip.Color(255, 0, 255), 700); // Magenta
 
-  //colorWipe(strip.Color(0, 0, 255), 50); // Blue
-
-  rainbow(20);
-
-  //rainbowCycle(20);
-
-  //colorAll(strip.Color(0, 255, 255), 50); // Cyan
+  rainbow(15);
 }
 
 // Set all pixels in the strip to a solid color, then wait (ms)
-void colorAll(uint32_t c, uint8_t wait) {
+void colorAll(uint32_t c, uint16_t wait) {
   uint16_t i;
 
   for(i=0; i<strip.numPixels(); i++) {

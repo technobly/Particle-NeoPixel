@@ -1,5 +1,5 @@
 /*-------------------------------------------------------------------------
-  Particle Core, Particle Photon, P1, Electron, Argon, Boron, Xenon, B SoM, B5 SoM, E SoM X, Tracker and
+  Particle Core, Particle Photon, P1, Electron, Argon, Boron, Xenon, B SoM, B5 SoM, E SoM X, P2, Photon 2, Tracker and
   RedBear Duo library to control WS2811/WS2812/WS2813 based RGB LED
   devices such as Adafruit NeoPixel strips.
 
@@ -64,7 +64,6 @@
 #endif // SYSTEM_VERSION < SYSTEM_VERSION_ALPHA(5,0,0,2)
   #define pinLO(_pin) (PIN_MAP2[_pin].gpio_peripheral->BSRRH = PIN_MAP2[_pin].gpio_pin)
   #define pinHI(_pin) (PIN_MAP2[_pin].gpio_peripheral->BSRRL = PIN_MAP2[_pin].gpio_pin)
-// #elif (PLATFORM_ID == 12) || (PLATFORM_ID == 13) || (PLATFORM_ID == 14) // Argon (12), Boron (13), Xenon (14)
 #elif HAL_PLATFORM_NRF52840 // Argon, Boron, Xenon, B SoM, B5 SoM, E SoM X, Tracker
   #include "nrf.h"
   #include "nrf_gpio.h"
@@ -76,12 +75,22 @@
 #endif // SYSTEM_VERSION < SYSTEM_VERSION_ALPHA(5,0,0,2)
   #define pinLO(_pin) (nrf_gpio_pin_clear(NRF_GPIO_PIN_MAP(PIN_MAP2[_pin].gpio_port, PIN_MAP2[_pin].gpio_pin)))
   #define pinHI(_pin) (nrf_gpio_pin_set(NRF_GPIO_PIN_MAP(PIN_MAP2[_pin].gpio_port, PIN_MAP2[_pin].gpio_pin)))
+#elif (PLATFORM_ID == 32) // HAL_PLATFORM_RTL872X
+  // nothing extra needed for P2
 #else
-  #error "*** PLATFORM_ID not supported by this library. PLATFORM should be Particle Core, Photon, Electron, Argon, Boron, Xenon, RedBear Duo, B SoM, B5 SoM, E SoM X or Tracker ***"
+  #error "*** PLATFORM_ID not supported by this library. PLATFORM should be Particle Core, Photon, Electron, Argon, Boron, Xenon, RedBear Duo, B SoM, B5 SoM, E SoM X, Tracker or P2 ***"
 #endif
 // fast pin access
 #define pinSet(_pin, _hilo) (_hilo ? pinHI(_pin) : pinLO(_pin))
 
+#if (PLATFORM_ID == 32)
+Adafruit_NeoPixel::Adafruit_NeoPixel(uint16_t n, SPIClass& spi, uint8_t t) :
+  begun(false), type(t), brightness(0), pixels(NULL), endTime(0)
+{
+  updateLength(n);
+  spi_ = &spi;
+}
+#else
 Adafruit_NeoPixel::Adafruit_NeoPixel(uint16_t n, uint8_t p, uint8_t t) :
   begun(false), type(t), brightness(0), pixels(NULL), endTime(0)
 {
@@ -89,9 +98,15 @@ Adafruit_NeoPixel::Adafruit_NeoPixel(uint16_t n, uint8_t p, uint8_t t) :
   setPin(p);
 }
 
+#endif // #if (PLATFORM_ID == 32)
+
 Adafruit_NeoPixel::~Adafruit_NeoPixel() {
   if (pixels) free(pixels);
+#if (PLATFORM_ID == 32)
+  spi_->end();
+#else
   if (begun) pinMode(pin, INPUT);
+#endif
 }
 
 uint8_t Adafruit_NeoPixel::getPin() const {
@@ -116,8 +131,48 @@ void Adafruit_NeoPixel::updateLength(uint16_t n) {
 }
 
 void Adafruit_NeoPixel::begin(void) {
+#if (PLATFORM_ID == 32)
+  if (getType() == WS2812B) {
+    if (spi_->interface() >= HAL_PLATFORM_SPI_NUM) {
+      Log.error("SPI/SPI1 interface not defined!");
+      return;
+    }
+
+    pin_t sckPin = SCK;
+    pin_t misoPin = MISO;
+    if (spi_->interface() == HAL_SPI_INTERFACE1) {
+      sckPin = SCK;
+      misoPin = MISO;
+    } else if (spi_->interface() == HAL_SPI_INTERFACE2) {
+      sckPin = SCK1;
+      misoPin = MISO1;
+    }
+    PinMode sckPinMode = getPinMode(sckPin);
+    PinMode misoPinMode = getPinMode(misoPin);
+    int sckValue = (sckPinMode == OUTPUT) ? digitalRead(sckPin) : 0;
+    int misoValue = (misoPinMode == OUTPUT) ? digitalRead(misoPin) : 0;
+    spi_->setClockSpeed(3125000);
+    // spi_->begin(PIN_INVALID); // PIN_INVALID will keep begin from taking over the default SS/SS1 pin as OUTPUT
+    // Note: no Wiring API yet to configure SPI for MOSI ONLY
+    hal_spi_config_t spi_config = {};
+    spi_config.size = sizeof(spi_config);
+    spi_config.version = HAL_SPI_CONFIG_VERSION;
+    spi_config.flags = (uint32_t)HAL_SPI_CONFIG_FLAG_MOSI_ONLY;
+    hal_spi_begin_ext(spi_->interface(), SPI_MODE_MASTER, PIN_INVALID, &spi_config);
+    // allow SCLK and MISO pin to be used as GPIO
+    pinMode(sckPin, sckPinMode);
+    pinMode(misoPin, misoPinMode);
+    if (sckPinMode == OUTPUT) {
+      digitalWrite(sckPin, sckValue);
+    }
+    if (misoPinMode == OUTPUT) {
+      digitalWrite(misoPin, misoValue);
+    }
+  }
+#else
   pinMode(pin, OUTPUT);
   digitalWrite(pin, LOW);
+#endif // #if (PLATFORM_ID == 32)
   begun = true;
 }
 
@@ -136,6 +191,7 @@ void Adafruit_NeoPixel::setPin(uint8_t p) {
 void Adafruit_NeoPixel::show(void) {
   if(!pixels) return;
 
+#if (PLATFORM_ID != 32)
   // Data latch = 24 or 50 microsecond pause in the output stream.  Rather than
   // put a delay at the end of the function, the ending time is noted and
   // the function will simply hold off (if needed) on issuing the
@@ -168,6 +224,7 @@ void Adafruit_NeoPixel::show(void) {
   // endTime is a private member (rather than global var) so that multiple
   // instances on different pins can be quickly issued in succession (each
   // instance doesn't delay the next).
+#endif // (PLATFORM_ID != 32)
 
 #if (PLATFORM_ID == 0) || (PLATFORM_ID == 6) || (PLATFORM_ID == 8) || (PLATFORM_ID == 10) || (PLATFORM_ID == 88) // Core (0), Photon (6), P1 (8), Electron (10) or Redbear Duo (88)
   __disable_irq(); // Need 100% focus on instruction timing
@@ -814,7 +871,54 @@ void Adafruit_NeoPixel::show(void) {
   }
 
   __enable_irq();
-#elif HAL_PLATFORM_NRF52840
+
+#elif (PLATFORM_ID == 32)
+  if (getType() != WS2812B) { // WS2812 WS2812B and WS2813 supported for P2
+    Log.error("Pixel type not supported!");
+    return;
+  }
+
+  constexpr uint8_t PIX_HI = 0b110;
+  constexpr uint8_t PIX_LO = 0b100;
+
+  uint16_t resetOff = 120; // 300us / (1/3125000Mhz) / 8bits_per_byte
+  switch (type) {
+    case WS2812B: { // WS2812, WS2812B & WS2813 = 300us reset pulse
+        resetOff = 120;
+      } break;
+    case WS2812B_FAST: // WS2812B_FAST = 50us reset pulse
+    default: {   // default = 50us reset pulse
+        resetOff = 20;
+      } break;
+  }
+
+  constexpr uint8_t numBitsPerBit = 3; // How many SPI bits represent one neopixel bit
+  uint32_t spiArraySize = (numBytes * numBitsPerBit) + resetOff + resetOff;
+  uint8_t* spiArray = NULL;
+  spiArray = (uint8_t*) malloc(spiArraySize);
+
+  if (spiArray == NULL) {
+    Log.error("Not enough memory available!");
+    return;
+  }
+
+  memset(spiArray, 0, spiArraySize);
+  // expand pixel data and pack into spi buffer
+  for (int x = 0; x < numPixels(); x++) {
+    for (int s = 0; s < 3; s++) {
+      spiArray[(x*9)+(s*3)+0+resetOff] = ((0x80 & pixels[(x*3)+s])?(PIX_HI << 5):(PIX_LO << 5)) + ((0x40 & pixels[(x*3)+s])?(PIX_HI << 2):(PIX_LO << 2)) + ((0x20 & pixels[(x*3)+s])?(0b11):(0b10));
+      spiArray[(x*9)+(s*3)+1+resetOff] = 0 /* bit 7 always 0 */ + ((0x10 & pixels[(x*3)+s])?(PIX_HI << 4):(PIX_LO << 4)) + ((0x08 & pixels[(x*3)+s])?(PIX_HI << 1):(PIX_LO << 1)) + 1 /* bit 0 always 1 */;
+      spiArray[(x*9)+(s*3)+2+resetOff] = ((0x04 & pixels[(x*3)+s])?(0b10 << 6):(0b00 << 6)) + ((0x02 & pixels[(x*3)+s])?(PIX_HI << 3):(PIX_LO << 3)) + ((0x01 & pixels[(x*3)+s])?(PIX_HI):(PIX_LO));
+    }
+  }
+
+  spi_->beginTransaction();
+  spi_->transfer(spiArray, nullptr, spiArraySize, nullptr);
+  spi_->endTransaction();
+
+  free(spiArray);
+
+#elif HAL_PLATFORM_NRF52840 // Argon, Boron, Xenon, B SoM, B5 SoM, E SoM X, Tracker
 // [[[Begin of the Neopixel NRF52 EasyDMA implementation
 //                                    by the Hackerspace San Salvador]]]
 // This technique uses the PWM peripheral on the NRF52. The PWM uses the
