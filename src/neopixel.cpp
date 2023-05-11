@@ -814,7 +814,7 @@ void Adafruit_NeoPixel::show(void) {
   }
 
   __enable_irq();
-#elif (PLATFORM_ID == 12) || (PLATFORM_ID == 13) || (PLATFORM_ID == 14) // Argon (12), Boron (13), Xenon (14)
+#elif HAL_PLATFORM_NRF52840
 // [[[Begin of the Neopixel NRF52 EasyDMA implementation
 //                                    by the Hackerspace San Salvador]]]
 // This technique uses the PWM peripheral on the NRF52. The PWM uses the
