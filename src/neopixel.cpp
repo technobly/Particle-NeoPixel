@@ -151,7 +151,6 @@ void Adafruit_NeoPixel::begin(void) {
     PinMode misoPinMode = getPinMode(misoPin);
     int sckValue = (sckPinMode == OUTPUT) ? digitalRead(sckPin) : 0;
     int misoValue = (misoPinMode == OUTPUT) ? digitalRead(misoPin) : 0;
-    spi_->setClockSpeed(3125000);
     // spi_->begin(PIN_INVALID); // PIN_INVALID will keep begin from taking over the default SS/SS1 pin as OUTPUT
     // Note: no Wiring API yet to configure SPI for MOSI ONLY
     hal_spi_config_t spi_config = {};
@@ -159,6 +158,7 @@ void Adafruit_NeoPixel::begin(void) {
     spi_config.version = HAL_SPI_CONFIG_VERSION;
     spi_config.flags = (uint32_t)HAL_SPI_CONFIG_FLAG_MOSI_ONLY;
     hal_spi_begin_ext(spi_->interface(), SPI_MODE_MASTER, PIN_INVALID, &spi_config);
+    spi_->setClockSpeed(3125000); // DVOS 5.7.0 requires setClockSpeed() to be set after begin()
     // allow SCLK and MISO pin to be used as GPIO
     pinMode(sckPin, sckPinMode);
     pinMode(misoPin, misoPinMode);
